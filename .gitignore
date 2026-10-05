@@ -28,3 +28,6 @@ Desktop.ini
 # Local environment / secrets override
 .env
 *.local
+
+QuizLive.md
+
