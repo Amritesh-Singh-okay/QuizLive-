@@ -1,0 +1,30 @@
+# Target build output
+target/
+*.war
+*.jar
+*.class
+
+# IDE and Editor configurations
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+*.sublime-project
+*.sublime-workspace
+
+# Logs and runtime files
+*.log
+logs/
+temp/
+tmp/
+
+# OS specific files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local environment / secrets override
+.env
+*.local
