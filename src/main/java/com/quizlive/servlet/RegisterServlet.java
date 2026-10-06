@@ -74,11 +74,7 @@ public class RegisterServlet extends HttpServlet {
         }
 
         if (role == Role.ADMIN) {
-            if (isHtmlFormPost(req)) {
-                resp.sendRedirect(req.getContextPath() + "/register.jsp?error=Registration+with+ADMIN+role+is+not+permitted");
-            } else {
-                JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Registration with ADMIN role is not permitted");
-            }
+            JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Registration with ADMIN role is not permitted");
             return;
         }
 

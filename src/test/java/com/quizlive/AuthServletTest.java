@@ -190,6 +190,60 @@ class AuthServletTest {
     }
 
     @Test
+    @DisplayName("RegisterServlet rejects admin self-registration with lowercase role")
+    void testRegisterAdminRoleLowercaseForbidden() throws Exception {
+        TestContext adminContext = new TestContext();
+        adminContext.setContentType("application/json");
+        adminContext.setBody("{\"name\":\"Admin Attempter\",\"email\":\"hacker_lc@quizlive.com\",\"password\":\"secure123\",\"role\":\"admin\"}");
+
+        registerServlet.service(adminContext.request, adminContext.response);
+        assertEquals(400, adminContext.status);
+        Map<?, ?> body = JsonUtil.fromJson(adminContext.getResponseBody(), Map.class);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Registration with ADMIN role is not permitted", body.get("error"));
+    }
+
+    @Test
+    @DisplayName("RegisterServlet rejects admin self-registration via form post")
+    void testRegisterAdminRoleFormForbidden() throws Exception {
+        TestContext adminContext = new TestContext();
+        adminContext.setContentType("application/x-www-form-urlencoded");
+        adminContext.setParameter("name", "Form Admin");
+        adminContext.setParameter("email", "hacker_form@quizlive.com");
+        adminContext.setParameter("password", "secure123");
+        adminContext.setParameter("role", "ADMIN");
+
+        registerServlet.service(adminContext.request, adminContext.response);
+        assertEquals(400, adminContext.status);
+        Map<?, ?> body = JsonUtil.fromJson(adminContext.getResponseBody(), Map.class);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Registration with ADMIN role is not permitted", body.get("error"));
+    }
+
+    @Test
+    @DisplayName("RegisterServlet allows registering with CREATOR role")
+    void testRegisterCreatorRoleSuccess() throws Exception {
+        String testEmail = "servletcreator_" + System.currentTimeMillis() + "@quizlive.com";
+        TestContext context = new TestContext();
+        context.setContentType("application/json");
+        context.setBody(String.format("{\"name\":\"Creator Test\",\"email\":\"%s\",\"password\":\"secure123\",\"role\":\"CREATOR\"}", testEmail));
+
+        registerServlet.service(context.request, context.response);
+
+        assertEquals(201, context.status);
+        Map<?, ?> body = JsonUtil.fromJson(context.getResponseBody(), Map.class);
+        assertTrue((Boolean) body.get("success"));
+
+        Map<?, ?> data = (Map<?, ?>) body.get("data");
+        assertNotNull(data);
+        assertEquals(testEmail, data.get("email"));
+        assertEquals("CREATOR", data.get("role"));
+
+        int createdId = ((Number) data.get("id")).intValue();
+        createdUserIds.add(createdId);
+    }
+
+    @Test
     @DisplayName("LogoutServlet invalidates active session and responds with JSON")
     void testLogoutSuccess() throws Exception {
         TestContext context = new TestContext();
@@ -297,6 +351,10 @@ class AuthServletTest {
 
         void setHeader(String name, String value) {
             headers.put(name, value);
+        }
+
+        void setParameter(String name, String value) {
+            parameters.put(name, new String[]{value});
         }
 
         String getResponseBody() {

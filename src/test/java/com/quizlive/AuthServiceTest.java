@@ -96,4 +96,14 @@ class AuthServiceTest {
         );
         assertEquals("Registration with ADMIN role is not permitted", ex.getMessage());
     }
+
+    @Test
+    @DisplayName("Verify creator registration succeeds")
+    void testRegisterCreatorRoleSuccess() throws SQLException {
+        String testEmail = "creator_" + System.currentTimeMillis() + "@quizlive.com";
+        AppUser creator = authService.register("Quiz Author", testEmail, "author123", Role.CREATOR);
+        assertNotNull(creator);
+        assertEquals(Role.CREATOR, creator.getRole());
+        userDao.delete(creator.getId());
+    }
 }

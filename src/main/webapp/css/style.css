@@ -18,8 +18,9 @@
 
     /* Typography / Plum Spectrum */
     --text-primary: #2E2638;
-    --text-secondary: #5C5468;
-    --text-muted: #7E7788;
+    --heading-color: #3D3349;
+    --text-secondary: #6B6375;
+    --text-muted: #6B6375;
 
     /* Accents & Primary Brand */
     --primary: #60527A;
@@ -72,6 +73,12 @@ body {
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--heading-color);
+    font-weight: 700;
+    line-height: 1.3;
 }
 
 a {

@@ -19,8 +19,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= pageTitle %></title>
-    <link rel="icon" type="image/svg+xml" href="<%= contextPath %>/favicon.svg">
-    <link rel="alternate icon" href="<%= contextPath %>/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="${pageContext.request.contextPath}/favicon.svg">
+    <link rel="alternate icon" href="${pageContext.request.contextPath}/favicon.ico">
     <link rel="stylesheet" href="<%= contextPath %>/css/style.css">
 </head>
 <body>

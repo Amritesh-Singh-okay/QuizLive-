@@ -19,7 +19,7 @@
                     <span class="live-dot"></span> System Operational
                 </span>
                 <a href="<%= footerContextPath %>/privacy.jsp" style="color: var(--text-muted); font-size: 0.8rem;">Privacy Policy</a>
-                <a href="<%= footerContextPath %>/terms.jsp" style="color: var(--text-muted); font-size: 0.8rem;">Terms of Service</a>
+                <a href="<%= footerContextPath %>/terms.jsp" style="color: var(--text-muted); font-size: 0.8rem;">Terms and Conditions</a>
                 <a href="<%= footerContextPath %>/health" target="_blank" style="color: var(--text-muted); font-size: 0.8rem;">Health Check</a>
                 <a href="<%= footerContextPath %>/leaderboard.jsp" style="color: var(--text-muted); font-size: 0.8rem;">Live Board</a>
             </div>
