@@ -89,6 +89,7 @@ public class QuizSchedulerService {
 
             attemptDao.submitAttempt(attempt, List.of());
             leaderboardService.refreshAndGetLeaderboard(attempt.getQuizId());
+            com.quizlive.websocket.LeaderboardEndpoint.broadcastLeaderboard(attempt.getQuizId(), leaderboardService);
         }
     }
 

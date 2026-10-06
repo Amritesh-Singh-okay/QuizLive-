@@ -80,6 +80,7 @@ public class SubmitAttemptServlet extends HttpServlet {
             schedulerService.cancelScheduledAutoSubmit(submitRequest.attemptId);
 
             Attempt scored = scoringService.scoreAndSubmit(submitRequest.attemptId, submitRequest.answers);
+            com.quizlive.websocket.LeaderboardEndpoint.broadcastLeaderboard(scored.getQuizId(), new com.quizlive.service.LeaderboardService());
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("attemptId", scored.getId());
