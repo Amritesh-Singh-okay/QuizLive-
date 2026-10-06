@@ -51,6 +51,9 @@ public class AttemptServlet extends HttpServlet {
                 int quizId = Integer.parseInt(quizIdParam.trim());
                 List<Attempt> attempts = attemptDao.listByQuiz(quizId);
                 JsonUtil.sendSuccess(resp, attempts);
+            } else if (user.getRole() == Role.CREATOR) {
+                List<Attempt> attempts = attemptDao.listByCreator(user.getId());
+                JsonUtil.sendSuccess(resp, attempts);
             } else {
                 List<Attempt> attempts = attemptDao.listByUser(user.getId());
                 JsonUtil.sendSuccess(resp, attempts);

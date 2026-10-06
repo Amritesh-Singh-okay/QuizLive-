@@ -129,6 +129,35 @@ class AdminAndMessagingServletTest {
     }
 
     @Test
+    @DisplayName("UserManagementServlet handles /api/admin/users/update-role and /api/admin/users/delete")
+    void testUserManagementApiEndpoints() throws Exception {
+        String testEmail = "apitest_" + System.currentTimeMillis() + "@quizlive.com";
+        AppUser tempUser = userDao.create(AppUser.create(0, "ApiUser", testEmail, "h", "s", Role.PARTICIPANT, null));
+        createdUserIds.add(tempUser.getId());
+
+        TestContext roleContext = new TestContext();
+        roleContext.sessionHolder.attributes.put("user", adminUser);
+        roleContext.setRequestUri("/quizlive/api/admin/users/update-role");
+        roleContext.setContentType("application/json");
+        roleContext.setBody(String.format("{\"userId\": %d, \"role\": \"CREATOR\"}", tempUser.getId()));
+
+        userServlet.service(roleContext.request, roleContext.response);
+        assertEquals(200, roleContext.status);
+        AppUser updated = userDao.findById(tempUser.getId());
+        assertEquals(Role.CREATOR, updated.getRole());
+
+        TestContext deleteContext = new TestContext();
+        deleteContext.sessionHolder.attributes.put("user", adminUser);
+        deleteContext.setRequestUri("/quizlive/api/admin/users/delete");
+        deleteContext.setContentType("application/json");
+        deleteContext.setBody(String.format("{\"userId\": %d}", tempUser.getId()));
+
+        userServlet.service(deleteContext.request, deleteContext.response);
+        assertEquals(200, deleteContext.status);
+        assertNull(userDao.findById(tempUser.getId()));
+    }
+
+    @Test
     @DisplayName("UserManagementServlet restricts operations to admin only")
     void testUserManagementForbiddenForParticipant() throws Exception {
         TestContext context = new TestContext();

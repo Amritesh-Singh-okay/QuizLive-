@@ -53,7 +53,7 @@ class AttemptDaoTest {
     @DisplayName("Verify attempt lifecycle: start, tab-switch increment, submit with answers")
     void testAttemptLifecycle() throws SQLException {
         int quizId = 2;
-        int userId = 5; // Charlie Brown
+        int userId = 5;
 
         Attempt existing = attemptDao.findByQuizAndUser(quizId, userId);
         if (existing != null) {
@@ -87,5 +87,12 @@ class AttemptDaoTest {
 
         List<AttemptAnswer> savedAnswers = attemptAnswerDao.findByAttemptId(attempt.getId());
         assertEquals(2, savedAnswers.size());
+    }
+
+    @Test
+    @DisplayName("Verify listByCreator retrieves attempts for quizzes authored by creator")
+    void testListByCreator() throws SQLException {
+        List<Attempt> list = attemptDao.listByCreator(2);
+        assertNotNull(list);
     }
 }

@@ -5,6 +5,12 @@
     request.setAttribute("pageTitle", "Messages - QuizLive");
     request.setAttribute("activeNav", "messages");
     String withUserParam = request.getParameter("withUser");
+    Integer safeWithUser = null;
+    if (withUserParam != null && !withUserParam.trim().isEmpty()) {
+        try {
+            safeWithUser = Integer.parseInt(withUserParam.trim());
+        } catch (NumberFormatException ignored) {}
+    }
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -96,7 +102,7 @@
     window.MESSAGES_CONFIG = {
         contextPath: '<%= request.getContextPath() %>',
         currentUserId: <%= (user != null) ? user.getId() : 0 %>,
-        initialWithUser: <%= (withUserParam != null && !withUserParam.trim().isEmpty()) ? withUserParam.trim() : "null" %>
+        initialWithUser: <%= (safeWithUser != null) ? safeWithUser : "null" %>
     };
 </script>
 <script src="<%= request.getContextPath() %>/js/messages.js"></script>

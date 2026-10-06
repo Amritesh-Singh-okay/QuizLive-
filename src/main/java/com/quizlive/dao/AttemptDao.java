@@ -23,4 +23,8 @@ public interface AttemptDao {
     List<Attempt> listByUser(int userId) throws SQLException;
 
     List<Attempt> listByQuiz(int quizId) throws SQLException;
+
+    default List<Attempt> listByCreator(int creatorId) throws SQLException {
+        return List.of();
+    }
 }

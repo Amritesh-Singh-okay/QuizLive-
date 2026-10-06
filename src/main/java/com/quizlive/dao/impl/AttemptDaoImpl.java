@@ -25,12 +25,14 @@ public class AttemptDaoImpl implements AttemptDao {
 
     private static final String SQL_FIND_BY_ID =
             "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
-            "u.name AS user_name, q.title AS quiz_title " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
             "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id WHERE a.id = ?";
 
     private static final String SQL_FIND_BY_QUIZ_AND_USER =
             "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
-            "u.name AS user_name, q.title AS quiz_title " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
             "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id WHERE a.quiz_id = ? AND a.user_id = ?";
 
     private static final String SQL_SUBMIT_ATTEMPT =
@@ -41,22 +43,32 @@ public class AttemptDaoImpl implements AttemptDao {
 
     private static final String SQL_GET_LEADERBOARD =
             "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
-            "u.name AS user_name, q.title AS quiz_title " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
             "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id " +
             "WHERE a.quiz_id = ? AND a.status IN ('SUBMITTED', 'AUTO_SUBMITTED') " +
             "ORDER BY a.score DESC, TIMESTAMPDIFF(SECOND, a.started_at, a.submitted_at) ASC";
 
     private static final String SQL_LIST_BY_USER =
             "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
-            "u.name AS user_name, q.title AS quiz_title " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
             "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id " +
             "WHERE a.user_id = ? ORDER BY a.started_at DESC";
 
     private static final String SQL_LIST_BY_QUIZ =
             "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
-            "u.name AS user_name, q.title AS quiz_title " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
             "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id " +
             "WHERE a.quiz_id = ? ORDER BY a.id DESC";
+
+    private static final String SQL_LIST_BY_CREATOR =
+            "SELECT a.id, a.quiz_id, a.user_id, a.started_at, a.submitted_at, a.score, a.tab_switches, a.status, " +
+            "u.name AS user_name, q.title AS quiz_title, " +
+            "COALESCE((SELECT SUM(points) FROM questions WHERE quiz_id = a.quiz_id), 0) AS max_score " +
+            "FROM attempts a JOIN users u ON a.user_id = u.id JOIN quizzes q ON a.quiz_id = q.id " +
+            "WHERE q.creator_id = ? ORDER BY a.id DESC";
 
     public AttemptDaoImpl() {
         this.attemptAnswerDao = new AttemptAnswerDaoImpl();
@@ -172,7 +184,6 @@ public class AttemptDaoImpl implements AttemptDao {
                     conn.setAutoCommit(true);
                     conn.close();
                 } catch (SQLException e) {
-                    // Ignored on close
                 }
             }
         }
@@ -232,6 +243,21 @@ public class AttemptDaoImpl implements AttemptDao {
         return list;
     }
 
+    @Override
+    public List<Attempt> listByCreator(int creatorId) throws SQLException {
+        List<Attempt> list = new ArrayList<>();
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_LIST_BY_CREATOR)) {
+            stmt.setInt(1, creatorId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRowToAttempt(rs));
+                }
+            }
+        }
+        return list;
+    }
+
     private Attempt mapRowToAttempt(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         int quizId = rs.getInt("quiz_id");
@@ -239,10 +265,15 @@ public class AttemptDaoImpl implements AttemptDao {
         Timestamp startedAt = rs.getTimestamp("started_at");
         Timestamp submittedAt = rs.getTimestamp("submitted_at");
         int score = rs.getInt("score");
+        int maxScore = 0;
+        try {
+            maxScore = rs.getInt("max_score");
+        } catch (SQLException ignored) {
+        }
         int tabSwitches = rs.getInt("tab_switches");
         AttemptStatus status = AttemptStatus.fromString(rs.getString("status"));
 
-        Attempt attempt = new Attempt(id, quizId, userId, startedAt, submittedAt, score, 0, tabSwitches, status);
+        Attempt attempt = new Attempt(id, quizId, userId, startedAt, submittedAt, score, maxScore, tabSwitches, status);
         attempt.setUserName(rs.getString("user_name"));
         attempt.setQuizTitle(rs.getString("quiz_title"));
         return attempt;

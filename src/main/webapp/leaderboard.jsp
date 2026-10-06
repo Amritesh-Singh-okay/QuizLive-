@@ -3,6 +3,12 @@
     request.setAttribute("pageTitle", "Live Leaderboard - QuizLive");
     request.setAttribute("activeNav", "leaderboard");
     String quizIdParam = request.getParameter("quizId");
+    int safeQuizId = 1;
+    if (quizIdParam != null && !quizIdParam.trim().isEmpty()) {
+        try {
+            safeQuizId = Integer.parseInt(quizIdParam.trim());
+        } catch (NumberFormatException ignored) {}
+    }
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -102,7 +108,7 @@
 <script>
     window.LEADERBOARD_CONFIG = {
         contextPath: '<%= request.getContextPath() %>',
-        initialQuizId: <%= (quizIdParam != null && !quizIdParam.trim().isEmpty()) ? quizIdParam.trim() : "1" %>
+        initialQuizId: <%= safeQuizId %>
     };
 </script>
 <script src="<%= request.getContextPath() %>/js/leaderboard.js"></script>

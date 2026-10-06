@@ -718,6 +718,14 @@ a:hover {
     box-shadow: 0 0 0 2px var(--primary);
 }
 
+.option-radio {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 .option-prefix {
     width: 32px;
     height: 32px;

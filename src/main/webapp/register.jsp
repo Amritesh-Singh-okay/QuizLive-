@@ -2,7 +2,8 @@
 <%
     request.setAttribute("pageTitle", "Create Account - QuizLive");
     request.setAttribute("activeNav", "register");
-    String error = request.getParameter("error");
+    String rawError = request.getParameter("error");
+    String safeError = (rawError != null) ? rawError.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#x27;") : "";
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -14,8 +15,8 @@
         </div>
 
         <div class="card-body">
-            <div id="auth-error-banner" class="alert alert-danger" style="<%= (error != null && !error.isEmpty()) ? "" : "display: none;" %>">
-                <%= (error != null) ? error : "" %>
+            <div id="auth-error-banner" class="alert alert-danger" style="<%= (!safeError.isEmpty()) ? "" : "display: none;" %>">
+                <%= safeError %>
             </div>
 
             <form id="register-form" action="<%= request.getContextPath() %>/register" method="POST" data-context-path="<%= request.getContextPath() %>">

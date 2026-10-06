@@ -94,6 +94,14 @@ class LeaderboardAndAttemptServletTest {
                 a.setQuizId(quizId);
                 return List.of(a);
             }
+
+            @Override
+            public List<Attempt> listByCreator(int creatorId) {
+                Attempt a = new Attempt();
+                a.setId(103);
+                a.setQuizId(1);
+                return List.of(a);
+            }
         };
 
         this.leaderboardServlet = new LeaderboardServlet(leaderboardService);
@@ -168,6 +176,21 @@ class LeaderboardAndAttemptServletTest {
         AppUser creator = AppUser.create(2, "Creator", "creator@quizlive.com", "h", "s", Role.CREATOR, null);
         ctx.sessionHolder.attributes.put("user", creator);
         ctx.parameters.put("quizId", new String[]{"1"});
+
+        attemptServlet.service(ctx.request, ctx.response);
+
+        assertEquals(200, ctx.status);
+        Map<?, ?> body = JsonUtil.fromJson(ctx.getResponseBody(), Map.class);
+        assertTrue((Boolean) body.get("success"));
+        List<?> data = (List<?>) body.get("data");
+        assertEquals(1, data.size());
+    }
+
+    @Test
+    void testAttemptServletListCreatorSubmissions() throws Exception {
+        TestContext ctx = new TestContext();
+        AppUser creator = AppUser.create(2, "Creator", "creator@quizlive.com", "h", "s", Role.CREATOR, null);
+        ctx.sessionHolder.attributes.put("user", creator);
 
         attemptServlet.service(ctx.request, ctx.response);
 

@@ -86,12 +86,15 @@
     <div class="card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Participant Submissions &amp; Anti-Cheat Review</h2>
+                <h2 class="card-title">Participant Submissions &amp; Anti-Cheat Review <span id="current-submissions-quiz-badge" style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-left: 0.5rem;"></span></h2>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
                     Inspect score performance and proctor violation flags (3+ tab switches).
                 </p>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">🔄 Refresh</button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" id="clear-submission-filter-btn" style="display: none;" onclick="loadSubmissions()">Show All</button>
+                <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">🔄 Refresh</button>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -182,6 +185,16 @@
 
     function loadSubmissions(quizId) {
         var tbody = document.getElementById('submissions-tbody');
+        var badge = document.getElementById('current-submissions-quiz-badge');
+        var clearBtn = document.getElementById('clear-submission-filter-btn');
+
+        if (badge) {
+            badge.textContent = quizId ? ('(Filtered to Quiz #' + quizId + ')') : '(All Authored Quizzes)';
+        }
+        if (clearBtn) {
+            clearBtn.style.display = quizId ? 'inline-block' : 'none';
+        }
+
         var url = contextPath + '/api/attempts' + (quizId ? ('?quizId=' + quizId) : '');
 
         fetch(url)

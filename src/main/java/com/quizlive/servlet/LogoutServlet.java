@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@WebServlet(name = "LogoutServlet", urlPatterns = {"/logout"})
+@WebServlet(name = "LogoutServlet", urlPatterns = {"/logout", "/api/logout", "/api/auth/logout"})
 public class LogoutServlet extends HttpServlet {
 
     @Override

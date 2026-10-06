@@ -75,6 +75,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (descEl) descEl.textContent = attemptData.description || 'Proctored live exam session.';
             if (totalQNumEl) totalQNumEl.textContent = questions.length;
 
+            if (questions.length === 0) {
+                if (promptEl) promptEl.textContent = 'No questions available for this quiz.';
+                if (submitQuizBtn) submitQuizBtn.disabled = true;
+                return;
+            }
+
             renderPalette();
             renderQuestion(0);
             startTimer();
@@ -215,15 +221,16 @@ document.addEventListener('DOMContentLoaded', function() {
             ];
 
             opts.forEach(function(opt) {
-                var card = document.createElement('div');
+                var card = document.createElement('label');
                 var isSelected = answers[q.id] === opt.key;
                 card.className = 'option-card' + (isSelected ? ' selected' : '');
 
                 card.innerHTML =
+                    '<input type="radio" name="question_' + q.id + '" value="' + opt.key + '"' + (isSelected ? ' checked' : '') + ' class="option-radio">' +
                     '<div class="option-prefix">' + opt.key + '</div>' +
                     '<div class="option-text">' + escapeHtml(opt.text) + '</div>';
 
-                card.onclick = function() {
+                card.onclick = function(e) {
                     answers[q.id] = opt.key;
                     renderQuestion(currentQuestionIndex);
                     renderPalette();

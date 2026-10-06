@@ -42,15 +42,25 @@
                 else if (type === 'error') icon = '❌';
                 else if (type === 'warning') icon = '⚠️';
 
-                toast.innerHTML = '<span style="font-size: 1.1rem;">' + icon + '</span>' +
-                                  '<span class="toast-message">' + message + '</span>' +
-                                  '<button class="toast-close">&times;</button>';
+                var iconSpan = document.createElement('span');
+                iconSpan.style.fontSize = '1.1rem';
+                iconSpan.textContent = icon;
 
-                var closeBtn = toast.querySelector('.toast-close');
+                var msgSpan = document.createElement('span');
+                msgSpan.className = 'toast-message';
+                msgSpan.textContent = message || '';
+
+                var closeBtn = document.createElement('button');
+                closeBtn.className = 'toast-close';
+                closeBtn.innerHTML = '&times;';
                 closeBtn.onclick = function() {
                     toast.classList.add('toast-hiding');
                     setTimeout(function() { toast.remove(); }, 300);
                 };
+
+                toast.appendChild(iconSpan);
+                toast.appendChild(msgSpan);
+                toast.appendChild(closeBtn);
 
                 container.appendChild(toast);
 

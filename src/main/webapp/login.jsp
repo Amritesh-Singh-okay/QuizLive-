@@ -2,7 +2,9 @@
 <%
     request.setAttribute("pageTitle", "Sign In - QuizLive");
     request.setAttribute("activeNav", "login");
-    String error = request.getParameter("error");
+    String rawError = request.getParameter("error");
+    String safeError = (rawError != null) ? rawError.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#x27;") : "";
+    String loggedOut = request.getParameter("loggedOut");
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -14,8 +16,15 @@
         </div>
 
         <div class="card-body">
-            <div id="auth-error-banner" class="alert alert-danger" style="<%= (error != null && !error.isEmpty()) ? "" : "display: none;" %>">
-                <%= (error != null) ? error : "" %>
+            <% if (loggedOut != null) { %>
+                <div class="alert alert-success" style="margin-bottom: 1rem;">
+                    <span>✅</span>
+                    <span>You have been signed out successfully.</span>
+                </div>
+            <% } %>
+
+            <div id="auth-error-banner" class="alert alert-danger" style="<%= (!safeError.isEmpty()) ? "" : "display: none;" %>">
+                <%= safeError %>
             </div>
 
             <form id="login-form" action="<%= request.getContextPath() %>/login" method="POST" data-context-path="<%= request.getContextPath() %>">

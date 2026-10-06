@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "UserManagementServlet", urlPatterns = {"/admin/users", "/api/admin/users", "/admin/users/delete", "/admin/users/update-role"})
+@WebServlet(name = "UserManagementServlet", urlPatterns = {"/admin/users", "/api/admin/users", "/admin/users/delete", "/api/admin/users/delete", "/admin/users/update-role", "/api/admin/users/update-role"})
 public class UserManagementServlet extends HttpServlet {
 
     private final UserDao userDao;
