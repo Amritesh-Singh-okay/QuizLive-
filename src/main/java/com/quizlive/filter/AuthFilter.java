@@ -29,6 +29,14 @@ public class AuthFilter implements Filter {
             "/health",
             "/unauthorized.jsp",
             "/quizzes",
+            "/api/quizzes",
+            "/api/auth/login",
+            "/api/login",
+            "/api/auth/register",
+            "/api/register",
+            "/leaderboard.jsp",
+            "/api/leaderboard",
+            "/leaderboard/data",
             "/settings"
     );
 

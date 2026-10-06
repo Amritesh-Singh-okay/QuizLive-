@@ -18,7 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet(name = "CreateQuizServlet", urlPatterns = {"/quizzes/create", "/creator/quizzes/create"})
+@WebServlet(name = "CreateQuizServlet", urlPatterns = {"/quizzes/create", "/creator/quizzes/create", "/api/quizzes/create", "/api/creator/quizzes/create"})
 public class CreateQuizServlet extends HttpServlet {
 
     private final QuizService quizService;

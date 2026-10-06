@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@WebServlet(name = "StartAttemptServlet", urlPatterns = {"/attempts/start", "/participant/attempts/start"})
+@WebServlet(name = "StartAttemptServlet", urlPatterns = {"/attempts/start", "/participant/attempts/start", "/api/attempts/start", "/api/participant/attempts/start"})
 public class StartAttemptServlet extends HttpServlet {
 
     private final AttemptDao attemptDao;

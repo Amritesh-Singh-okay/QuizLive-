@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "SubmitAttemptServlet", urlPatterns = {"/attempts/submit", "/participant/attempts/submit"})
+@WebServlet(name = "SubmitAttemptServlet", urlPatterns = {"/attempts/submit", "/participant/attempts/submit", "/api/attempts/submit", "/api/participant/attempts/submit"})
 public class SubmitAttemptServlet extends HttpServlet {
 
     private final ScoringService scoringService;

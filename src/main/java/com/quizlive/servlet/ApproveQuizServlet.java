@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@WebServlet(name = "ApproveQuizServlet", urlPatterns = {"/quizzes/approve", "/quizzes/reject", "/admin/quizzes/approve", "/admin/quizzes/reject"})
+@WebServlet(name = "ApproveQuizServlet", urlPatterns = {"/quizzes/approve", "/quizzes/reject", "/admin/quizzes/approve", "/admin/quizzes/reject", "/api/quizzes/approve", "/api/quizzes/reject", "/api/admin/quizzes/approve", "/api/admin/quizzes/reject"})
 public class ApproveQuizServlet extends HttpServlet {
 
     private final QuizService quizService;

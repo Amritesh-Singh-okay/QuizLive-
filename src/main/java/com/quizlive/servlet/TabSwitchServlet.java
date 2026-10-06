@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@WebServlet(name = "TabSwitchServlet", urlPatterns = {"/attempts/tab-switch", "/participant/attempts/tab-switch"})
+@WebServlet(name = "TabSwitchServlet", urlPatterns = {"/attempts/tab-switch", "/participant/attempts/tab-switch", "/api/attempts/tab-switch", "/api/participant/attempts/tab-switch"})
 public class TabSwitchServlet extends HttpServlet {
 
     private final ActiveAttemptRegistry registry;

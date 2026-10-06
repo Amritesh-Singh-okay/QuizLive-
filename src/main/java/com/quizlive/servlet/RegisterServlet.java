@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@WebServlet(name = "RegisterServlet", urlPatterns = {"/register"})
+@WebServlet(name = "RegisterServlet", urlPatterns = {"/register", "/api/auth/register", "/api/register"})
 public class RegisterServlet extends HttpServlet {
 
     private final AuthService authService;
