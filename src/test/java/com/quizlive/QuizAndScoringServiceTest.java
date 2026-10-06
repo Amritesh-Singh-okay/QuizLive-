@@ -3,16 +3,21 @@ package com.quizlive;
 import com.quizlive.dao.AttemptDao;
 import com.quizlive.dao.QuestionDao;
 import com.quizlive.dao.QuizDao;
+import com.quizlive.dao.UserDao;
 import com.quizlive.dao.impl.AttemptDaoImpl;
 import com.quizlive.dao.impl.QuestionDaoImpl;
 import com.quizlive.dao.impl.QuizDaoImpl;
+import com.quizlive.dao.impl.UserDaoImpl;
 import com.quizlive.exception.InvalidAttemptException;
 import com.quizlive.exception.QuizClosedException;
+import com.quizlive.model.AppUser;
 import com.quizlive.model.Attempt;
 import com.quizlive.model.Question;
 import com.quizlive.model.Quiz;
+import com.quizlive.model.enums.Role;
 import com.quizlive.service.QuizService;
 import com.quizlive.service.ScoringService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,22 +30,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuizAndScoringServiceTest {
 
     private QuizService quizService;
     private ScoringService scoringService;
     private AttemptDao attemptDao;
+    private UserDao userDao;
+    private int tempUserId = 0;
 
     @BeforeEach
     void setUp() {
         QuestionDao questionDao = new QuestionDaoImpl();
         QuizDao quizDao = new QuizDaoImpl(questionDao);
         this.attemptDao = new AttemptDaoImpl();
+        this.userDao = new UserDaoImpl();
 
         this.quizService = new QuizService(quizDao, questionDao);
         this.scoringService = new ScoringService(questionDao, attemptDao);
+    }
+
+    @AfterEach
+    void tearDown() throws SQLException {
+        if (tempUserId > 0) {
+            userDao.delete(tempUserId);
+            tempUserId = 0;
+        }
     }
 
     @Test
@@ -66,18 +81,17 @@ class QuizAndScoringServiceTest {
     @Test
     @DisplayName("Verify server-side scoring computes exact score and rejects double submissions")
     void testScoringAndDoubleSubmit() throws SQLException, InvalidAttemptException {
-        // Start a test attempt on Quiz 1 for user 5 (Charlie)
-        Attempt attempt = attemptDao.findByQuizAndUser(1, 5);
-        if (attempt == null) {
-            attempt = attemptDao.startAttempt(1, 5);
-        }
+        String email = "scoring_temp_" + System.currentTimeMillis() + "@quizlive.com";
+        AppUser tempUser = userDao.create(AppUser.create(0, "Temp Scoring User", email, "hash", "salt", Role.PARTICIPANT, null));
+        tempUserId = tempUser.getId();
 
-        // Quiz 1 true answers from seed: Q1: B, Q2: B, Q3: B, Q4: C
+        Attempt attempt = attemptDao.startAttempt(1, tempUserId);
+
         Map<Integer, Character> userAnswers = new HashMap<>();
-        userAnswers.put(1, 'B'); // correct (1pt)
-        userAnswers.put(2, 'B'); // correct (1pt)
-        userAnswers.put(3, 'A'); // wrong (0pt)
-        userAnswers.put(4, 'C'); // correct (1pt)
+        userAnswers.put(1, 'B');
+        userAnswers.put(2, 'B');
+        userAnswers.put(3, 'A');
+        userAnswers.put(4, 'C');
 
         Attempt finalized = scoringService.scoreAndSubmit(attempt.getId(), userAnswers);
         assertNotNull(finalized);
@@ -85,7 +99,6 @@ class QuizAndScoringServiceTest {
         assertEquals(4, finalized.getMaxScore());
         assertEquals(75.0, finalized.getPercentage());
 
-        // Re-submission should fail
         assertThrows(InvalidAttemptException.class, () ->
                 scoringService.scoreAndSubmit(finalized.getId(), userAnswers)
         );
