@@ -27,7 +27,8 @@ public class AuthFilter implements Filter {
             "/register.jsp",
             "/logout",
             "/health",
-            "/unauthorized.jsp"
+            "/unauthorized.jsp",
+            "/quizzes"
     );
 
     @Override
