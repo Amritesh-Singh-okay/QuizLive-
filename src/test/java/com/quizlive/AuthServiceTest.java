@@ -87,4 +87,13 @@ class AuthServiceTest {
                 authService.register("Short Pass", "short@quizlive.com", "123", Role.PARTICIPANT)
         );
     }
+
+    @Test
+    @DisplayName("Verify registration rejects ADMIN role")
+    void testRegisterAdminRoleRejected() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                authService.register("Admin Aspirant", "aspiring_admin@quizlive.com", "secure123", Role.ADMIN)
+        );
+        assertEquals("Registration with ADMIN role is not permitted", ex.getMessage());
+    }
 }

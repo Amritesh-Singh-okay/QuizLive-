@@ -8,17 +8,16 @@
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-<div class="container" style="max-width: 480px; margin-top: 1rem;">
+<div class="container" style="max-width: 460px; margin-top: 1rem;">
     <div class="card">
-        <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
-            <h2 class="card-title" style="font-size: 1.4rem;">Sign In to QuizLive</h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);">Enter your credentials or choose a quick demo account.</p>
+        <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+            <h1 class="card-title" style="font-size: 1.35rem;">Sign In</h1>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Access your assessments or management dashboard.</p>
         </div>
 
         <div class="card-body">
             <% if (loggedOut != null) { %>
-                <div class="alert alert-success" style="margin-bottom: 1rem;">
-                    <span>✅</span>
+                <div class="alert alert-success" style="margin-bottom: 1.25rem;">
                     <span>You have been signed out successfully.</span>
                 </div>
             <% } %>
@@ -43,27 +42,27 @@
                 </div>
             </form>
 
-            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem;">
-                    ⚡ Quick Demo Logins
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                <p style="font-size: 0.775rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.65rem;">
+                    Demo Account Profiles
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="fillCredentials('alice@quizlive.com', 'password123')">
-                        👤 Participant (Alice) &mdash; alice@quizlive.com
+                <div style="display: flex; flex-direction: column; gap: 0.45rem;">
+                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('alice@quizlive.com', 'password123')">
+                        Participant (Alice): alice@quizlive.com
                     </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="fillCredentials('bob@quizlive.com', 'creator123')">
-                        ✍️ Creator (Bob) &mdash; bob@quizlive.com
+                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('bob@quizlive.com', 'creator123')">
+                        Creator (Bob): bob@quizlive.com
                     </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="fillCredentials('admin@quizlive.com', 'admin123')">
-                        🛡️ Administrator &mdash; admin@quizlive.com
+                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('admin@quizlive.com', 'admin123')">
+                        Administrator: admin@quizlive.com
                     </button>
                 </div>
             </div>
         </div>
 
         <div class="card-footer" style="justify-content: center;">
-            <p style="font-size: 0.875rem; color: var(--text-secondary);">
-                Don't have an account? <a href="<%= request.getContextPath() %>/register.jsp" style="font-weight: 600;">Create one free</a>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                Need an account? <a href="<%= request.getContextPath() %>/register.jsp" style="font-weight: 600;">Create one here</a>
             </p>
         </div>
     </div>

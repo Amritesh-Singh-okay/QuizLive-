@@ -5,10 +5,10 @@
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-<div class="container" style="max-width: 900px;">
+<div class="container" style="max-width: 880px;">
     <div style="margin-bottom: 2rem;">
         <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.35rem;">
-            Dynamic Quiz Builder ✍️
+            Assessment Authoring Studio
         </h1>
         <p style="color: var(--text-secondary); font-size: 0.95rem;">
             Define assessment parameters, author multiple-choice questions, and set the proctored duration.
@@ -19,23 +19,23 @@
         <!-- Basic Settings Card -->
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header">
-                <h2 class="card-title">1. Quiz General Information</h2>
+                <h2 class="card-title">1. General Information</h2>
             </div>
             <div class="card-body">
                 <div class="form-group">
                     <label for="quiz-title" class="form-label">Quiz Title *</label>
-                    <input type="text" id="quiz-title" class="form-control" placeholder="e.g. Java Concurrency &amp; Multithreading Masterclass" required>
+                    <input type="text" id="quiz-title" class="form-control" placeholder="e.g. Clinical Pharmacology Assessment" required>
                 </div>
 
                 <div class="form-group">
                     <label for="quiz-desc" class="form-label">Description / Instructions</label>
-                    <textarea id="quiz-desc" class="form-textarea" placeholder="Provide overview or instructions for test takers..."></textarea>
+                    <textarea id="quiz-desc" class="form-textarea" placeholder="Provide test instructions, topics covered, or clinical notes..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="quiz-duration" class="form-label">Proctored Duration (Seconds) *</label>
                     <input type="number" id="quiz-duration" class="form-control" value="300" min="30" max="7200" required>
-                    <p class="form-help">Enter total test duration in seconds (e.g. 300 = 5 minutes, 600 = 10 minutes).</p>
+                    <p class="form-help">Total test duration in seconds (e.g. 300 = 5 minutes, 600 = 10 minutes).</p>
                 </div>
             </div>
         </div>
@@ -52,16 +52,16 @@
             <!-- Question cards appended dynamically -->
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 3rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 3rem;">
             <a href="<%= request.getContextPath() %>/creator/dashboard.jsp" class="btn btn-outline">
                 Cancel
             </a>
-            <div style="display: flex; gap: 1rem;">
+            <div style="display: flex; gap: 0.75rem;">
                 <button type="button" class="btn btn-secondary" id="add-question-btn-bottom">
                     + Add Question
                 </button>
                 <button type="submit" id="save-quiz-btn" class="btn btn-primary btn-lg">
-                    🚀 Publish Quiz for Approval
+                    Publish Quiz for Approval
                 </button>
             </div>
         </div>

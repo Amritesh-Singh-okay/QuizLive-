@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#2E2638" />
+  <rect x="4" y="4" width="56" height="56" rx="11" fill="#3D3349" stroke="#60527A" stroke-width="1.5" />
+  <!-- Calming healthcare cross with rounded tips -->
+  <path d="M28 17 C28 15.34 29.34 14 31 14 L33 14 C34.66 14 36 15.34 36 17 L36 28 L47 28 C48.66 28 50 29.34 50 31 L50 33 C50 34.66 48.66 36 47 36 L36 36 L36 47 C36 48.66 34.66 50 33 50 L31 50 C29.34 50 28 48.66 28 47 L28 36 L17 36 C15.34 36 14 34.66 14 31 L14 29 C14 27.34 15.34 26 17 26 L28 26 Z" fill="#E3DEF2" />
+  <!-- Center healing dot / pulse node -->
+  <circle cx="32" cy="31" r="3.5" fill="#3B7354" />
+</svg>

@@ -176,6 +176,20 @@ class AuthServletTest {
     }
 
     @Test
+    @DisplayName("RegisterServlet rejects admin self-registration with 400 Bad Request")
+    void testRegisterAdminRoleForbidden() throws Exception {
+        TestContext adminContext = new TestContext();
+        adminContext.setContentType("application/json");
+        adminContext.setBody("{\"name\":\"Admin Attempter\",\"email\":\"hacker@quizlive.com\",\"password\":\"secure123\",\"role\":\"ADMIN\"}");
+
+        registerServlet.service(adminContext.request, adminContext.response);
+        assertEquals(400, adminContext.status);
+        Map<?, ?> body = JsonUtil.fromJson(adminContext.getResponseBody(), Map.class);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Registration with ADMIN role is not permitted", body.get("error"));
+    }
+
+    @Test
     @DisplayName("LogoutServlet invalidates active session and responds with JSON")
     void testLogoutSuccess() throws Exception {
         TestContext context = new TestContext();

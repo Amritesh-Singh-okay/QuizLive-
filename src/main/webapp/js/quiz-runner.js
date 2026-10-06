@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (window.showToast) {
-            window.showToast('error', '⚠️ Anti-Cheat Warning: Tab switch incident logged! (Count: ' + tabSwitches + ')', 5000);
+            window.showToast('error', 'Anti-Cheat Warning: Tab switch incident logged. (Count: ' + tabSwitches + ')', 5000);
         }
 
         if (tabSwitches >= 3 && proctorBanner) {
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (unansweredWarning) {
                 if (answeredCount < questions.length) {
                     unansweredWarning.style.display = 'block';
-                    unansweredWarning.textContent = '⚠️ You have only answered ' + answeredCount + ' of ' + questions.length + ' questions.';
+                    unansweredWarning.textContent = 'You have only answered ' + answeredCount + ' of ' + questions.length + ' questions.';
                 } else {
                     unansweredWarning.style.display = 'none';
                 }

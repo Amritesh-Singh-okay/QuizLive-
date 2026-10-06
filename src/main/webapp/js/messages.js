@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!resData || !resData.success || !resData.data || resData.data.length === 0) {
                     if (!isPoll) {
-                        messagesContainer.innerHTML = '<div style="text-align: center; margin: auto; color: var(--text-muted); font-size: 0.9rem;">No messages exchanged yet with User #' + partnerId + '. Say hello! 👋</div>';
+                        messagesContainer.innerHTML = '<div style="text-align: center; margin: auto; color: var(--text-muted); font-size: 0.9rem;">No messages exchanged yet with User #' + partnerId + '. Send a message to start the conversation.</div>';
                     }
                     return;
                 }

@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.showToast) window.showToast('error', err);
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = '🚀 Publish Quiz for Approval';
+                        submitBtn.textContent = 'Publish Quiz for Approval';
                     }
                 }
             })
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.showToast) window.showToast('error', 'Network error creating quiz.');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '🚀 Publish Quiz for Approval';
+                    submitBtn.textContent = 'Publish Quiz for Approval';
                 }
             });
         });

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(res) { return res.json(); })
             .then(function(resData) {
                 if (!resData || !resData.success || !resData.data || resData.data.length === 0) {
-                    pendingTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No quizzes pending approval. All caught up! 🎉</td></tr>';
+                    pendingTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No quizzes pending approval. All caught up.</td></tr>';
                     document.getElementById('stat-pending-approvals').textContent = '0';
                     return;
                 }
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<td>User #' + q.creatorId + '</td>' +
                         '<td>' +
                             '<div style="display: flex; gap: 0.5rem;">' +
-                                '<button class="btn btn-success btn-sm" onclick="approveQuiz(' + q.id + ', \'approve\')">✓ Approve</button>' +
+                                '<button class="btn btn-success btn-sm" onclick="approveQuiz(' + q.id + ', \'approve\')">Approve</button>' +
                                 '<button class="btn btn-danger btn-sm" onclick="approveQuiz(' + q.id + ', \'reject\')">&times; Reject</button>' +
                             '</div>' +
                         '</td>';
@@ -111,8 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         '</td>' +
                         '<td style="font-size: 0.85rem; color: var(--text-muted);">' + dateStr + '</td>' +
                         '<td>' +
-                            '<button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4);" onclick="deleteUser(' + u.id + ', \'' + escapeHtml(u.name) + '\')">' +
-                                '🗑️ Delete' +
+                            '<button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(163, 56, 59, 0.4);" onclick="deleteUser(' + u.id + ', \'' + escapeHtml(u.name) + '\')">' +
+                                'Delete' +
                             '</button>' +
                         '</td>';
 
@@ -244,10 +244,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(resData) {
                 if (saveBtn) {
                     saveBtn.disabled = false;
-                    saveBtn.textContent = '💾 Save System Settings';
+                    saveBtn.textContent = 'Save System Settings';
                 }
                 if (resData && resData.success) {
-                    if (window.showToast) window.showToast('success', 'System settings saved successfully!');
+                    if (window.showToast) window.showToast('success', 'System settings saved successfully.');
                 } else {
                     var err = (resData && resData.error) ? resData.error : 'Failed to save settings';
                     if (window.showToast) window.showToast('error', err);
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(function(err) {
                 if (saveBtn) {
                     saveBtn.disabled = false;
-                    saveBtn.textContent = '💾 Save System Settings';
+                    saveBtn.textContent = 'Save System Settings';
                 }
                 if (window.showToast) window.showToast('error', 'Network error saving settings.');
             });

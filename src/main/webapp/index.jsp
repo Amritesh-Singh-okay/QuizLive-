@@ -2,7 +2,7 @@
 <%@ page import="com.quizlive.model.AppUser" %>
 <%
     AppUser user = (session != null) ? (AppUser) session.getAttribute("user") : null;
-    request.setAttribute("pageTitle", "QuizLive - Real-Time Timed Quizzes & Live Leaderboard");
+    request.setAttribute("pageTitle", "QuizLive: Proctored Timed Assessments");
     request.setAttribute("activeNav", "home");
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
@@ -12,90 +12,107 @@
     <% if (user != null) { %>
         <div class="alert alert-success" style="margin-bottom: 2rem; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.4rem;">👋</span>
                 <div>
-                    <strong>Welcome back, <%= user.getName() %>!</strong> You are signed in as
+                    <strong>Welcome back, <%= user.getName() %>:</strong> You are signed in as
                     <span class="badge <%= user.getRole().name().equals("ADMIN") ? "badge-admin" : user.getRole().name().equals("CREATOR") ? "badge-creator" : "badge-participant" %>">
                         <%= user.getRole().name() %>
-                    </span>.
+                    </span>
                 </div>
             </div>
             <a href="<%= request.getContextPath() %><%= user.getDashboardUrl() %>" class="btn btn-primary btn-sm">
-                Open My Dashboard &rarr;
+                Open Dashboard &rarr;
             </a>
         </div>
     <% } %>
 
     <!-- Hero Section -->
-    <div style="text-align: center; padding: 3.5rem 1rem 3rem; max-width: 850px; margin: 0 auto;">
-        <span class="live-badge" style="margin-bottom: 1.25rem;">
-            <span class="live-dot"></span> Next-Gen Real-Time Assessment Platform
-        </span>
-        <h1 style="font-size: 3.25rem; font-weight: 900; line-height: 1.15; margin-bottom: 1.25rem; background: linear-gradient(135deg, #ffffff 40%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Compete. Learn. Master in Real-Time ⚡
+    <div style="text-align: center; padding: 3.5rem 1rem 3rem; max-width: 820px; margin: 0 auto;">
+        <div style="margin-bottom: 1.25rem;">
+            <span class="live-badge">
+                <span class="live-dot"></span> Proctored Examination Engine
+            </span>
+        </div>
+        <h1 style="font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.25rem; color: var(--text-primary); letter-spacing: -0.02em;">
+            Timed Assessments with Quiet Precision and Real-Time Integrity
         </h1>
-        <p style="font-size: 1.2rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
-            Experience live timed assessments with automated anti-cheat proctoring, high-precision countdown engines, instant grading, and real-time WebSocket push leaderboards.
+        <p style="font-size: 1.125rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 2rem;">
+            A proctored assessment environment providing automated visibility tracking, thread-safe server countdowns, instantaneous grading, and synchronized live leaderboards.
         </p>
 
-        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.85rem; flex-wrap: wrap;">
             <% if (user == null) { %>
                 <a href="<%= request.getContextPath() %>/register.jsp" class="btn btn-primary btn-lg">
-                    🚀 Get Started Free
+                    Create an Account
                 </a>
                 <a href="<%= request.getContextPath() %>/login.jsp" class="btn btn-secondary btn-lg">
                     Sign In
                 </a>
             <% } else { %>
                 <a href="<%= request.getContextPath() %><%= user.getDashboardUrl() %>" class="btn btn-primary btn-lg">
-                    🎯 Launch Dashboard
+                    Launch Dashboard
                 </a>
             <% } %>
             <a href="<%= request.getContextPath() %>/leaderboard.jsp" class="btn btn-outline btn-lg">
-                🏆 View Live Leaderboards
+                View Live Leaderboards
             </a>
         </div>
     </div>
 
     <!-- Feature Pillars -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 4rem;">
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🛡️</div>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
-                Anti-Cheat Proctoring
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3.5rem;">
+        <div class="card" style="padding: 1.75rem;">
+            <div style="width: 44px; height: 44px; border-radius: var(--radius-sm); background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
+                Proctored Integrity
             </h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
-                Client-side visibility listeners detect tab switching and window minimization in real-time. Incidents are logged and flagged on creator dashboards.
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                Browser Page Visibility API monitors detect unfocused windows and tab switches in real time. Incidents are logged server-side and reviewed on creator dashboards.
             </p>
         </div>
 
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem;">⏱️</div>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
-                Timed Exam Engine
+        <div class="card" style="padding: 1.75rem;">
+            <div style="width: 44px; height: 44px; border-radius: var(--radius-sm); background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
+                Server-Enforced Timers
             </h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
-                Thread-safe server timers automatically enforce quiz deadlines and auto-submit answers with grace buffers to prevent late submissions.
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                High-precision server countdowns guard each attempt. Tests automatically submit at expiration with a calibrated grace buffer to prevent late responses.
             </p>
         </div>
 
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
-                Real-Time Push Leaderboards
+        <div class="card" style="padding: 1.75rem;">
+            <div style="width: 44px; height: 44px; border-radius: var(--radius-sm); background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
+                Synchronized Rankings
             </h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
-                Jakarta WebSocket endpoints push instant ranking updates and podium highlights to all connected spectators the moment a test is submitted.
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                WebSocket endpoints push updated rankings to all connected observers the moment an exam completes, with immediate accuracy and duration metrics.
             </p>
         </div>
     </div>
 
     <!-- Featured Live Quizzes Section -->
-    <div style="margin-bottom: 4rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <div style="margin-bottom: 3.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
             <div>
-                <h2 style="font-size: 1.6rem; font-weight: 800;">Featured Active Quizzes</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Join these live assessments now</p>
+                <h2 style="font-size: 1.45rem; font-weight: 700; color: var(--text-primary);">Active Quiz Catalog</h2>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">Approved assessments currently open for participation</p>
             </div>
             <a href="<%= request.getContextPath() %>/leaderboard.jsp" class="btn btn-outline btn-sm">
                 View All Leaderboards &rarr;
@@ -109,35 +126,32 @@
         </div>
     </div>
 
-    <!-- Demo Fast-Pass Evaluation Section -->
-    <div class="card" style="margin-bottom: 4rem; background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-card) 100%);">
-        <div class="card-header" style="justify-content: center; text-align: center; flex-direction: column;">
-            <h2 class="card-title" style="font-size: 1.3rem;">⚡ Quick Demo Fast-Pass</h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                Click any role below to prefill demo credentials and test all role features immediately:
+    <!-- Quick Demo Accounts Section -->
+    <div class="card" style="margin-bottom: 3.5rem;">
+        <div class="card-header" style="justify-content: flex-start; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+            <h2 class="card-title">Quick Demo Sign-In</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                Select any predefined profile below to fill credentials and explore role-specific permissions:
             </p>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; border-color: rgba(6, 182, 212, 0.4); text-align: center;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.35rem;">👤</div>
-                    <div style="font-weight: 700; color: var(--text-primary);">Alice (Participant)</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">alice@quizlive.com</div>
-                    <span class="badge badge-participant" style="margin-top: 0.75rem;">Take Quizzes</span>
+                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; text-align: left; background-color: var(--bg-surface-alt);">
+                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Alice (Participant)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">alice@quizlive.com</div>
+                    <span class="badge badge-participant">Take Quizzes</span>
                 </a>
 
-                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; border-color: rgba(99, 102, 241, 0.4); text-align: center;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.35rem;">✍️</div>
-                    <div style="font-weight: 700; color: var(--text-primary);">Bob (Creator)</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">bob@quizlive.com</div>
-                    <span class="badge badge-creator" style="margin-top: 0.75rem;">Build Assessments</span>
+                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; text-align: left; background-color: var(--bg-surface-alt);">
+                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Bob (Creator)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">bob@quizlive.com</div>
+                    <span class="badge badge-creator">Author Tests</span>
                 </a>
 
-                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; border-color: rgba(168, 85, 247, 0.4); text-align: center;">
-                    <div style="font-size: 1.8rem; margin-bottom: 0.35rem;">🛡️</div>
-                    <div style="font-weight: 700; color: var(--text-primary);">Admin (Administrator)</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">admin@quizlive.com</div>
-                    <span class="badge badge-admin" style="margin-top: 0.75rem;">Full Governance</span>
+                <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; text-align: left; background-color: var(--bg-surface-alt);">
+                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Administrator</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">admin@quizlive.com</div>
+                    <span class="badge badge-admin">System Oversight</span>
                 </a>
             </div>
         </div>
@@ -170,28 +184,28 @@
 
                     card.innerHTML =
                         '<div class="card-header">' +
-                            '<h3 class="card-title" style="font-size: 1.15rem;">' + escapeHtml(q.title) + '</h3>' +
-                            '<span class="badge badge-approved">Live</span>' +
+                            '<h3 class="card-title" style="font-size: 1.05rem;">' + escapeHtml(q.title) + '</h3>' +
+                            '<span class="badge badge-approved">Active</span>' +
                         '</div>' +
                         '<div class="card-body" style="flex: 1;">' +
-                            '<p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; min-height: 40px;">' +
-                                escapeHtml(q.description || 'Test your knowledge in this timed competition.') +
+                            '<p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; min-height: 40px; line-height: 1.5;">' +
+                                escapeHtml(q.description || 'Proctored timed assessment.') +
                             '</p>' +
-                            '<div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">' +
-                                '<span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">' +
-                                    '⏱️ ' + durationMin + ' min' +
+                            '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">' +
+                                '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);">' +
+                                    durationMin + ' min' +
                                 '</span>' +
-                                '<span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">' +
-                                    '❓ ' + qCount + ' Questions' +
+                                '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);">' +
+                                    qCount + ' Questions' +
                                 '</span>' +
                             '</div>' +
                         '</div>' +
                         '<div class="card-footer">' +
                             '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm">' +
-                                '🏆 Leaderboard' +
+                                'Leaderboard' +
                             '</a>' +
                             '<a href="' + contextPath + '/participant/take-quiz.jsp?quizId=' + q.id + '" class="btn btn-primary btn-sm">' +
-                                '🚀 Participate' +
+                                'Participate' +
                             '</a>' +
                         '</div>';
 

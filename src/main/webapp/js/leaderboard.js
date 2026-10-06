@@ -181,9 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             tr.className = 'row-highlight';
 
             var rankBadge = '';
-            if (entry.rank === 1) rankBadge = '<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">🥇 #1</span>';
-            else if (entry.rank === 2) rankBadge = '<span class="badge" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1;">🥈 #2</span>';
-            else if (entry.rank === 3) rankBadge = '<span class="badge" style="background: rgba(217, 119, 6, 0.2); color: #f59e0b;">🥉 #3</span>';
+            if (entry.rank === 1) rankBadge = '<span class="badge" style="background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border);">Rank 1</span>';
+            else if (entry.rank === 2) rankBadge = '<span class="badge" style="background: var(--primary-light); color: var(--primary); border: 1px solid var(--lavender-border);">Rank 2</span>';
+            else if (entry.rank === 3) rankBadge = '<span class="badge" style="background: #F8F1EB; color: #9C6738; border: 1px solid #E5D0C0;">Rank 3</span>';
             else rankBadge = '<strong>#' + entry.rank + '</strong>';
 
             var perc = (entry.percentage != null) ? entry.percentage.toFixed(1) + '%' : '--';

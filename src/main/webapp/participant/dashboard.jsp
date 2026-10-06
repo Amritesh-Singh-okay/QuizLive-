@@ -11,15 +11,15 @@
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
         <div>
             <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
-                Welcome back, <%= user != null ? user.getName() : "Student" %> 👋
+                Welcome back, <%= user != null ? user.getName() : "Student" %>
             </h1>
             <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Select an active quiz below to participate in real-time competitions.
+                Select an active quiz below to participate in proctored timed assessments.
             </p>
         </div>
         <div>
             <a href="<%= request.getContextPath() %>/leaderboard.jsp" class="btn btn-secondary">
-                🏆 View All Leaderboards
+                View All Leaderboards
             </a>
         </div>
     </div>
@@ -31,31 +31,51 @@
                 <div class="stat-value" id="stat-available">--</div>
                 <div class="stat-label">Available Quizzes</div>
             </div>
-            <div class="stat-icon">📚</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+            </div>
         </div>
         <div class="stat-card">
             <div>
                 <div class="stat-value" id="stat-completed">--</div>
                 <div class="stat-label">My Attempts</div>
             </div>
-            <div class="stat-icon">🎯</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B7354" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
         </div>
         <div class="stat-card">
             <div>
                 <div class="stat-value" id="stat-avg-score">--</div>
                 <div class="stat-label">Average Score</div>
             </div>
-            <div class="stat-icon">⚡</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
         </div>
     </div>
 
     <!-- Anti-Cheat Notice -->
     <div class="alert alert-warning" style="margin-bottom: 2rem;">
-        <span style="font-size: 1.3rem;">🛡️</span>
+        <span style="display: inline-flex; align-items: center; flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B87333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        </span>
         <div>
-            <strong>Anti-Cheat Proctored Environment Active:</strong>
-            Switching browser tabs, minimizing the test window, or leaving the page during an active quiz is tracked on the server.
-            Excessive violations (3+) will flag your submission for review.
+            <strong>Proctored Environment Active:</strong>
+            Switching browser tabs, minimizing the exam window, or navigating away during an active test is recorded server-side.
+            Multiple violations (3 or more) flag your submission for academic review.
         </div>
     </div>
 
@@ -63,7 +83,7 @@
     <div style="margin-bottom: 3rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
             <h2 style="font-size: 1.35rem; font-weight: 700;">Active Quiz Catalog</h2>
-            <button class="btn btn-outline btn-sm" onclick="loadQuizzes()">🔄 Refresh</button>
+            <button class="btn btn-outline btn-sm" onclick="loadQuizzes()">Refresh</button>
         </div>
 
         <div id="quiz-list-loading" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
@@ -74,8 +94,8 @@
             <!-- Quiz cards rendered via JS -->
         </div>
 
-        <div id="no-quizzes-msg" style="display: none; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
-            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem;">No active quizzes found right now.</p>
+        <div id="no-quizzes-msg" style="display: none; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <p style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem;">No active quizzes found right now.</p>
         </div>
     </div>
 
@@ -83,7 +103,7 @@
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
             <h2 style="font-size: 1.35rem; font-weight: 700;">My Submission History</h2>
-            <button class="btn btn-outline btn-sm" onclick="loadAttempts()">🔄 Refresh</button>
+            <button class="btn btn-outline btn-sm" onclick="loadAttempts()">Refresh</button>
         </div>
 
         <div class="card">
@@ -158,28 +178,28 @@
 
                     card.innerHTML =
                         '<div class="card-header">' +
-                            '<h3 class="card-title" style="font-size: 1.15rem;">' + escapeHtml(q.title) + '</h3>' +
+                            '<h3 class="card-title" style="font-size: 1.05rem;">' + escapeHtml(q.title) + '</h3>' +
                             '<span class="badge badge-approved">Approved</span>' +
                         '</div>' +
                         '<div class="card-body" style="flex: 1;">' +
-                            '<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; min-height: 40px;">' +
-                                escapeHtml(q.description || 'Test your knowledge in this live timed quiz.') +
+                            '<p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; min-height: 40px; line-height: 1.5;">' +
+                                escapeHtml(q.description || 'Proctored live assessment.') +
                             '</p>' +
-                            '<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">' +
-                                '<span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">' +
-                                    '⏱️ ' + durationMin + ' min (' + q.durationSeconds + 's)' +
+                            '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">' +
+                                '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);">' +
+                                    durationMin + ' min (' + q.durationSeconds + 's)' +
                                 '</span>' +
-                                '<span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">' +
-                                    '❓ ' + qCount + ' Questions' +
+                                '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);">' +
+                                    qCount + ' Questions' +
                                 '</span>' +
                             '</div>' +
                         '</div>' +
                         '<div class="card-footer">' +
                             '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm">' +
-                                '🏆 Ranks' +
+                                'Leaderboard' +
                             '</a>' +
                             '<a href="' + contextPath + '/participant/take-quiz.jsp?quizId=' + q.id + '" class="btn btn-primary btn-sm">' +
-                                '🚀 Start Quiz' +
+                                'Start Quiz' +
                             '</a>' +
                         '</div>';
 
@@ -223,11 +243,11 @@
 
                     var switchesBadge = (a.tabSwitches > 0)
                         ? '<span class="badge ' + (a.tabSwitches >= 3 ? 'badge-rejected' : 'badge-pending') + '">' + a.tabSwitches + ' switches</span>'
-                        : '<span style="color: var(--success);">0</span>';
+                        : '<span style="color: var(--success); font-weight: 600;">0</span>';
 
                     var statusBadge = (a.status === 'SUBMITTED') ? '<span class="badge badge-approved">Submitted</span>' :
-                                      (a.status === 'AUTO_SUBMITTED') ? '<span class="badge badge-warning">Auto-Submitted</span>' :
-                                      '<span class="badge badge-pending">' + a.status + '</span>';
+                                      (a.status === 'AUTO_SUBMITTED') ? '<span class="badge badge-pending">Auto-Submitted</span>' :
+                                      '<span class="badge badge-participant">' + a.status + '</span>';
 
                     tr.innerHTML =
                         '<td>#' + a.id + '</td>' +

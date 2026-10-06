@@ -38,11 +38,10 @@
                 <div class="form-group">
                     <label for="role" class="form-label">Account Role</label>
                     <select id="role" name="role" class="form-select">
-                        <option value="PARTICIPANT" selected>Student / Participant (Take live quizzes &amp; climb ranks)</option>
-                        <option value="CREATOR">Quiz Creator (Author quizzes, manage questions &amp; review scores)</option>
-                        <option value="ADMIN">Administrator (System approvals &amp; user management)</option>
+                        <option value="PARTICIPANT" selected>Participant</option>
+                        <option value="CREATOR">Quiz Creator</option>
                     </select>
-                    <p class="form-help">Select the primary capability for your account.</p>
+                    <p class="form-help">Choose whether you are participating in assessments or authoring new tests.</p>
                 </div>
 
                 <div style="margin-top: 1.5rem;">

@@ -18,14 +18,14 @@
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
             <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
-                Direct Conversations 💬
+                Direct Conversations
             </h1>
             <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Real-time communication between students, quiz creators, and proctors.
+                Communication between participants, quiz creators, and proctors.
             </p>
         </div>
         <button type="button" class="btn btn-primary btn-sm" onclick="openNewMsgModal()">
-            ✏️ New Conversation
+            New Conversation
         </button>
     </div>
 

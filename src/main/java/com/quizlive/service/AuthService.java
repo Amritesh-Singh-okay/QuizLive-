@@ -34,6 +34,9 @@ public class AuthService {
         if (role == null) {
             throw new IllegalArgumentException("Role cannot be null");
         }
+        if (role == Role.ADMIN) {
+            throw new IllegalArgumentException("Registration with ADMIN role is not permitted");
+        }
 
         String normalizedEmail = email.trim().toLowerCase();
 

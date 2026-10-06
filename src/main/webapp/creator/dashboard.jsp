@@ -11,10 +11,10 @@
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
         <div>
             <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
-                Creator Studio 👋
+                Creator Studio
             </h1>
             <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Design timed assessments, review participant submissions, and track integrity flags.
+                Design timed assessments, inspect candidate responses, and monitor proctor integrity logs.
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
@@ -22,7 +22,7 @@
                 + Create New Quiz
             </a>
             <a href="<%= request.getContextPath() %>/messages.jsp" class="btn btn-secondary">
-                💬 Participant Messages
+                Participant Messages
             </a>
         </div>
     </div>
@@ -34,29 +34,46 @@
                 <div class="stat-value" id="stat-my-quizzes">--</div>
                 <div class="stat-label">My Quizzes</div>
             </div>
-            <div class="stat-icon">📝</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60527A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </div>
         </div>
         <div class="stat-card">
             <div>
                 <div class="stat-value" id="stat-approved">--</div>
-                <div class="stat-label">Approved &amp; Live</div>
+                <div class="stat-label">Approved &amp; Active</div>
             </div>
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B7354" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
         </div>
         <div class="stat-card">
             <div>
                 <div class="stat-value" id="stat-pending">--</div>
                 <div class="stat-label">Pending Approval</div>
             </div>
-            <div class="stat-icon">⏳</div>
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B87333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
         </div>
     </div>
 
     <!-- Creator Quizzes Table -->
     <div class="card" style="margin-bottom: 2.5rem;">
         <div class="card-header">
-            <h2 class="card-title">My Authored Quizzes</h2>
-            <button class="btn btn-outline btn-sm" onclick="loadMyQuizzes()">🔄 Refresh</button>
+            <h2 class="card-title">Authored Quizzes</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadMyQuizzes()">Refresh</button>
         </div>
 
         <div class="table-responsive">
@@ -86,14 +103,14 @@
     <div class="card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Participant Submissions &amp; Anti-Cheat Review <span id="current-submissions-quiz-badge" style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-left: 0.5rem;"></span></h2>
+                <h2 class="card-title">Participant Submissions &amp; Proctor Review <span id="current-submissions-quiz-badge" style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-left: 0.5rem;"></span></h2>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-                    Inspect score performance and proctor violation flags (3+ tab switches).
+                    Inspect score performance and proctor violation flags (3 or more tab switches).
                 </p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
                 <button class="btn btn-outline btn-sm" id="clear-submission-filter-btn" style="display: none;" onclick="loadSubmissions()">Show All</button>
-                <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">🔄 Refresh</button>
+                <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">Refresh</button>
             </div>
         </div>
 
@@ -167,8 +184,8 @@
                         '<td>' + statusBadge + '</td>' +
                         '<td>' +
                             '<div style="display: flex; gap: 0.5rem;">' +
-                                '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm">🏆 Leaderboard</a>' +
-                                '<button class="btn btn-secondary btn-sm" onclick="filterSubmissionsByQuiz(' + q.id + ')">📊 Submissions</button>' +
+                                '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm">Leaderboard</a>' +
+                                '<button class="btn btn-secondary btn-sm" onclick="filterSubmissionsByQuiz(' + q.id + ')">Submissions</button>' +
                             '</div>' +
                         '</td>';
 
@@ -213,14 +230,14 @@
                     var perc = (a.percentage != null) ? a.percentage.toFixed(1) + '%' : (a.maxScore > 0 ? ((a.score / a.maxScore) * 100).toFixed(1) + '%' : '--');
 
                     var violationsBadge = (a.tabSwitches >= 3)
-                        ? '<span class="badge badge-rejected">🚨 Flagged (' + a.tabSwitches + ' switches)</span>'
+                        ? '<span class="badge badge-rejected">Flagged (' + a.tabSwitches + ' switches)</span>'
                         : (a.tabSwitches > 0)
-                            ? '<span class="badge badge-pending">⚠️ ' + a.tabSwitches + ' switches</span>'
-                            : '<span style="color: var(--success); font-weight: 600;">✓ Clean (0)</span>';
+                            ? '<span class="badge badge-pending">' + a.tabSwitches + ' switches</span>'
+                            : '<span style="color: var(--success); font-weight: 600;">Clean (0)</span>';
 
                     var statusBadge = (a.status === 'SUBMITTED') ? '<span class="badge badge-approved">Submitted</span>' :
-                                      (a.status === 'AUTO_SUBMITTED') ? '<span class="badge badge-warning">Auto-Submitted</span>' :
-                                      '<span class="badge badge-pending">' + a.status + '</span>';
+                                      (a.status === 'AUTO_SUBMITTED') ? '<span class="badge badge-pending">Auto-Submitted</span>' :
+                                      '<span class="badge badge-participant">' + a.status + '</span>';
 
                     tr.innerHTML =
                         '<td>#' + a.id + '</td>' +
@@ -232,7 +249,7 @@
                         '<td>' + violationsBadge + '</td>' +
                         '<td>' + statusBadge + '</td>' +
                         '<td>' +
-                            '<a href="' + contextPath + '/messages.jsp?withUser=' + a.userId + '" class="btn btn-outline btn-sm">💬 Message</a>' +
+                            '<a href="' + contextPath + '/messages.jsp?withUser=' + a.userId + '" class="btn btn-outline btn-sm">Message</a>' +
                         '</td>';
 
                     tbody.appendChild(tr);

@@ -2,7 +2,7 @@
 <%@ page import="com.quizlive.model.AppUser" %>
 <%
     AppUser user = (session != null) ? (AppUser) session.getAttribute("user") : null;
-    request.setAttribute("pageTitle", "Live Exam Runner - QuizLive");
+    request.setAttribute("pageTitle", "Exam Runner - QuizLive");
     request.setAttribute("activeNav", "dashboard");
     String quizIdParam = request.getParameter("quizId");
     int safeQuizId = 1;
@@ -14,11 +14,13 @@
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-<div class="container" style="max-width: 900px;">
+<div class="container" style="max-width: 880px;">
     <!-- Anti-Cheat Status Header -->
     <div class="anti-cheat-bar" id="anti-cheat-bar">
         <div class="anti-cheat-indicator">
-            <span style="font-size: 1.3rem;">🛡️</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
             <span>PROCTORED LIVE ENVIRONMENT</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -30,10 +32,16 @@
 
     <!-- Proctor Flag Alert Banner -->
     <div id="proctor-flagged-banner" class="alert alert-danger" style="display: none; margin-bottom: 1.5rem;">
-        <span style="font-size: 1.4rem;">🚨</span>
+        <span style="display: inline-flex; align-items: center; flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A3383B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </span>
         <div>
             <strong>FLAGGED FOR REVIEW:</strong>
-            You have switched tabs 3 or more times. Your quiz session has been marked with a cheat violation on the proctor dashboard!
+            You have switched tabs 3 or more times. Your session has been flagged on the proctor dashboard for review.
         </div>
     </div>
 
@@ -41,7 +49,7 @@
     <div class="card" style="margin-bottom: 1.5rem;">
         <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1.25rem 1.5rem;">
             <div>
-                <h1 id="quiz-title" style="font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+                <h1 id="quiz-title" style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
                     Loading Quiz...
                 </h1>
                 <p id="quiz-desc" style="font-size: 0.875rem; color: var(--text-secondary);">
@@ -49,7 +57,7 @@
                 </p>
             </div>
             <div class="timer-box">
-                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.2rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.2rem;">
                     Time Remaining
                 </div>
                 <div class="timer-digits" id="timer-display">--:--</div>
@@ -60,13 +68,13 @@
     <!-- Question Palette -->
     <div style="margin-bottom: 1rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">
                 Question Navigator
             </span>
             <span style="font-size: 0.85rem; color: var(--text-muted);" id="answered-count">0 answered</span>
         </div>
         <div class="question-palette" id="question-palette">
-            <!-- Pill buttons rendered by JS -->
+            <!-- Palette buttons rendered by JS -->
         </div>
     </div>
 
@@ -77,14 +85,14 @@
                 Question <span id="current-q-num">1</span> of <span id="total-q-num">--</span>
             </div>
             <div>
-                <span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--secondary);" id="question-points">
+                <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);" id="question-points">
                     10 Points
                 </span>
             </div>
         </div>
 
         <div class="card-body">
-            <h2 id="question-prompt" style="font-size: 1.25rem; font-weight: 600; line-height: 1.4; margin-bottom: 1.5rem; color: var(--text-primary);">
+            <h2 id="question-prompt" style="font-size: 1.2rem; font-weight: 600; line-height: 1.45; margin-bottom: 1.5rem; color: var(--text-primary);">
                 Loading question...
             </h2>
 
@@ -102,7 +110,7 @@
                     Next &rarr;
                 </button>
                 <button type="button" id="submit-quiz-btn" class="btn btn-success">
-                    ✓ Submit Quiz
+                    Submit Quiz
                 </button>
             </div>
         </div>
@@ -116,16 +124,16 @@
             <h3 class="card-title">Confirm Quiz Submission</h3>
         </div>
         <div class="card-body">
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+            <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6;">
                 Are you sure you want to finalize and submit your answers? Once submitted, your score will be calculated and broadcast immediately to the live leaderboard.
             </p>
             <p id="unanswered-warning" style="display: none; color: var(--warning); font-size: 0.9rem; font-weight: 600;">
-                ⚠️ You still have unanswered questions!
+                You still have unanswered questions.
             </p>
         </div>
         <div class="card-footer" style="justify-content: flex-end; gap: 0.75rem;">
             <button type="button" class="btn btn-secondary" onclick="closeConfirmModal()">Keep Working</button>
-            <button type="button" class="btn btn-success" id="final-submit-btn" onclick="executeSubmission()">Yes, Submit Now</button>
+            <button type="button" class="btn btn-success" id="final-submit-btn" onclick="executeSubmission()">Submit Now</button>
         </div>
     </div>
 </div>
@@ -133,31 +141,31 @@
 <!-- Results Modal -->
 <div id="results-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 480px; text-align: center;">
-        <div class="card-header" style="justify-content: center; background: rgba(16, 185, 129, 0.1);">
-            <h2 class="card-title" style="color: var(--success); font-size: 1.4rem;">🎉 Quiz Completed!</h2>
+        <div class="card-header" style="justify-content: center; background: var(--success-bg);">
+            <h2 class="card-title" style="color: var(--success); font-size: 1.35rem;">Assessment Completed</h2>
         </div>
         <div class="card-body">
-            <div style="font-size: 3.5rem; font-weight: 900; color: var(--text-primary); line-height: 1; margin: 1rem 0 0.5rem;" id="final-percentage">
+            <div style="font-size: 3rem; font-weight: 800; color: var(--text-primary); line-height: 1; margin: 1rem 0 0.5rem;" id="final-percentage">
                 --%
             </div>
-            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <p style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
                 Your Score: <strong id="final-score" style="color: var(--text-primary);">--</strong> / <span id="final-max-score">--</span> points
             </p>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; text-align: left;">
-                <div style="background: var(--bg-surface); padding: 0.9rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
-                    <div style="font-weight: 700; color: var(--success); font-size: 1rem;" id="final-status">SUBMITTED</div>
+                    <div style="font-weight: 700; color: var(--success); font-size: 0.95rem;" id="final-status">SUBMITTED</div>
                 </div>
-                <div style="background: var(--bg-surface); padding: 0.9rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Tab Switches</div>
-                    <div style="font-weight: 700; font-size: 1rem;" id="final-violations">0</div>
+                    <div style="font-weight: 700; font-size: 0.95rem;" id="final-violations">0</div>
                 </div>
             </div>
         </div>
-        <div class="card-footer" style="flex-direction: column; gap: 0.75rem;">
+        <div class="card-footer" style="flex-direction: column; gap: 0.65rem;">
             <a id="view-leaderboard-btn" href="<%= request.getContextPath() %>/leaderboard.jsp" class="btn btn-primary btn-block btn-lg">
-                🏆 View Live Leaderboard
+                View Live Leaderboard
             </a>
             <a href="<%= request.getContextPath() %>/participant/dashboard.jsp" class="btn btn-outline btn-block">
                 Return to Dashboard
