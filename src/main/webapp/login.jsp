@@ -50,10 +50,10 @@
                     <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('alice@quizlive.com', 'password123')">
                         Participant (Alice): alice@quizlive.com
                     </button>
-                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('bob@quizlive.com', 'creator123')">
-                        Creator (Bob): bob@quizlive.com
+                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('creator@quizlive.com', 'password123')">
+                        Creator (Prof. Sharma): creator@quizlive.com
                     </button>
-                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('admin@quizlive.com', 'admin123')">
+                    <button type="button" class="btn btn-secondary btn-sm" style="justify-content: flex-start;" onclick="fillCredentials('admin@quizlive.com', 'password123')">
                         Administrator: admin@quizlive.com
                     </button>
                 </div>

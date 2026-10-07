@@ -143,8 +143,8 @@
                 </a>
 
                 <a href="<%= request.getContextPath() %>/login.jsp" class="card" style="padding: 1.25rem; text-decoration: none; text-align: left; background-color: var(--bg-surface-alt);">
-                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Bob (Creator)</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">bob@quizlive.com</div>
+                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Prof. Arvind Sharma (Creator)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">creator@quizlive.com</div>
                     <span class="badge badge-creator">Author Tests</span>
                 </a>
 
