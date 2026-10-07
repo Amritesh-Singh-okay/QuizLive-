@@ -21,4 +21,9 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
+    <!-- Application Lifecycle Listener -->
+    <listener>
+        <listener-class>com.quizlive.util.AppContextListener</listener-class>
+    </listener>
+
 </web-app>

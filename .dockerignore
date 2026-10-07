@@ -1,0 +1,21 @@
+# Ignore local secrets and environment overrides
+.env
+*.local
+*.secret
+
+# Ignore build artifacts and caches
+target/
+*.war
+*.jar
+*.class
+
+# Ignore git and development configurations
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+.settings/
+
+# Ignore documentation notes
+QuizLive.md

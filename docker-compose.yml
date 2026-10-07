@@ -1,0 +1,49 @@
+# ==============================================================================
+# QuizLive Full-Stack Docker Compose
+# Runs QuizLive web application + MySQL 8.0 database
+# Usage:
+#   docker compose up -d --build
+# ==============================================================================
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: quizlive-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: quizlive_password
+      MYSQL_DATABASE: quizlive
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pquizlive_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quizlive-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      CONTEXT_PATH: ""
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: quizlive
+      DB_USER: root
+      DB_PASSWORD: quizlive_password
+      DB_AUTO_INIT: "true"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

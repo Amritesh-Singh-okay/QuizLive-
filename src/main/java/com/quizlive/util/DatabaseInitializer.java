@@ -25,6 +25,10 @@ public final class DatabaseInitializer {
      * Executes the schema and seed scripts against the configured database.
      */
     public static void initialize() {
+        if (!EnvConfig.isDbAutoInitEnabled()) {
+            LOGGER.info("Database auto-initialization is disabled via configuration (DB_AUTO_INIT=false).");
+            return;
+        }
         LOGGER.info("Starting database schema and seed data check...");
         executeSqlScript("schema.sql");
         executeSqlScript("seed.sql");
@@ -65,7 +69,8 @@ public final class DatabaseInitializer {
                         // Strip trailing semicolon for execution
                         sql = sql.substring(0, sql.length() - 1).trim();
 
-                        if (!sql.isEmpty() && !sql.toUpperCase().startsWith("USE ")) {
+                        String upperSql = sql.toUpperCase();
+                        if (!sql.isEmpty() && !upperSql.startsWith("USE ") && !upperSql.startsWith("CREATE DATABASE ")) {
                             try {
                                 stmt.execute(sql);
                             } catch (Exception e) {

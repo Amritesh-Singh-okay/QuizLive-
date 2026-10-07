@@ -1,6 +1,7 @@
 package com.quizlive;
 
 import com.quizlive.util.DatabaseInitializer;
+import com.quizlive.util.EnvConfig;
 import com.quizlive.websocket.LeaderboardEndpoint;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.connector.Connector;
@@ -18,19 +19,25 @@ import java.util.Set;
 public class AppLauncher {
 
     private static final int DEFAULT_PORT = 8080;
-    private static final String CONTEXT_PATH = "/quizlive";
+    private static final String DEFAULT_CONTEXT_PATH = "/quizlive";
 
     public static void main(String[] args) throws Exception {
         int port = resolvePort();
-        Tomcat tomcat = createServer(port);
+        String contextPath = resolveContextPath();
+        Tomcat tomcat = createServer(port, contextPath);
 
         tomcat.start();
-        System.out.println("QuizLive server running at http://localhost:" + port + CONTEXT_PATH);
-        System.out.println("Health check available at http://localhost:" + port + CONTEXT_PATH + "/health");
+        String displayContext = contextPath.isEmpty() ? "" : contextPath;
+        System.out.println("QuizLive server running at http://localhost:" + port + displayContext);
+        System.out.println("Health check available at http://localhost:" + port + displayContext + "/health");
         tomcat.getServer().await();
     }
 
     public static Tomcat createServer(int port) throws IOException {
+        return createServer(port, resolveContextPath());
+    }
+
+    public static Tomcat createServer(int port, String contextPath) throws IOException {
         try {
             DatabaseInitializer.initialize();
         } catch (Exception e) {
@@ -49,16 +56,13 @@ public class AppLauncher {
         connector.setProperty("relaxedPathChars", "<>[\\]^`{|}");
         connector.setProperty("relaxedQueryChars", "<>[\\]^`{|}");
 
-        File webappDir = new File("src/main/webapp");
-        if (!webappDir.exists()) {
-            webappDir = baseDir;
-        }
+        File webappDir = resolveWebappDir(baseDir);
 
-        StandardContext ctx = (StandardContext) tomcat.addWebapp(CONTEXT_PATH, webappDir.getAbsolutePath());
+        StandardContext ctx = (StandardContext) tomcat.addWebapp(contextPath, webappDir.getAbsolutePath());
         ctx.setParentClassLoader(AppLauncher.class.getClassLoader());
 
-        File additionWebInfClasses = new File("target/classes");
-        if (additionWebInfClasses.exists()) {
+        File additionWebInfClasses = resolveClassesDir();
+        if (additionWebInfClasses != null && additionWebInfClasses.exists()) {
             WebResourceRoot resources = new StandardRoot(ctx);
             resources.addPreResources(new DirResourceSet(resources, "/WEB-INF/classes",
                     additionWebInfClasses.getAbsolutePath(), "/"));
@@ -78,23 +82,41 @@ public class AppLauncher {
         return tomcat;
     }
 
-    private static int resolvePort() {
-        String envPort = System.getenv("PORT");
-        if (envPort != null && !envPort.trim().isEmpty()) {
-            try {
-                return Integer.parseInt(envPort.trim());
-            } catch (NumberFormatException ignored) {
+    private static File resolveWebappDir(File fallback) {
+        String[] candidates = new String[]{
+                "src/main/webapp",
+                "webapp",
+                "target/quizlive"
+        };
+        for (String c : candidates) {
+            File f = new File(c);
+            if (f.exists() && f.isDirectory()) {
+                return f;
             }
         }
+        return fallback;
+    }
 
-        String propPort = System.getProperty("server.port");
-        if (propPort != null && !propPort.trim().isEmpty()) {
-            try {
-                return Integer.parseInt(propPort.trim());
-            } catch (NumberFormatException ignored) {
+    private static File resolveClassesDir() {
+        String[] candidates = new String[]{
+                "target/classes",
+                "build/classes",
+                "WEB-INF/classes"
+        };
+        for (String c : candidates) {
+            File f = new File(c);
+            if (f.exists() && f.isDirectory()) {
+                return f;
             }
         }
+        return null;
+    }
 
-        return DEFAULT_PORT;
+    public static int resolvePort() {
+        return EnvConfig.getPort(DEFAULT_PORT);
+    }
+
+    public static String resolveContextPath() {
+        return EnvConfig.getContextPath(DEFAULT_CONTEXT_PATH);
     }
 }

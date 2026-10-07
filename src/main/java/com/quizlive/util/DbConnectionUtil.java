@@ -56,30 +56,18 @@ public final class DbConnectionUtil {
      * Initializes the connection pool from db.properties.
      */
     private static void initDataSource() {
-        Properties props = new Properties();
-
-        try (InputStream in = DbConnectionUtil.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (in == null) {
-                throw new IllegalStateException("db.properties file not found on classpath!");
-            }
-            props.load(in);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load db.properties file", e);
-            throw new RuntimeException("Could not read db.properties", e);
-        }
-
         HikariConfig config = new HikariConfig();
-        config.setDriverClassName(props.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
-        config.setJdbcUrl(props.getProperty("db.url"));
-        config.setUsername(props.getProperty("db.user", "root"));
-        config.setPassword(props.getProperty("db.password", ""));
+        config.setDriverClassName(EnvConfig.getDbDriver());
+        config.setJdbcUrl(EnvConfig.getDbUrl());
+        config.setUsername(EnvConfig.getDbUser());
+        config.setPassword(EnvConfig.getDbPassword());
 
         // Pool tuning properties
-        config.setMaximumPoolSize(Integer.parseInt(props.getProperty("hikari.maximumPoolSize", "10")));
-        config.setMinimumIdle(Integer.parseInt(props.getProperty("hikari.minimumIdle", "2")));
-        config.setIdleTimeout(Long.parseLong(props.getProperty("hikari.idleTimeout", "30000")));
-        config.setConnectionTimeout(Long.parseLong(props.getProperty("hikari.connectionTimeout", "20000")));
-        config.setMaxLifetime(Long.parseLong(props.getProperty("hikari.maxLifetime", "1800000")));
+        config.setMaximumPoolSize(EnvConfig.getHikariMaximumPoolSize());
+        config.setMinimumIdle(EnvConfig.getHikariMinimumIdle());
+        config.setIdleTimeout(EnvConfig.getHikariIdleTimeout());
+        config.setConnectionTimeout(EnvConfig.getHikariConnectionTimeout());
+        config.setMaxLifetime(EnvConfig.getHikariMaxLifetime());
 
         // Pool identification
         config.setPoolName("QuizLive-HikariPool");
@@ -91,6 +79,7 @@ public final class DbConnectionUtil {
         config.addDataSourceProperty("useServerPrepStmts", "true");
 
         try {
+            LOGGER.info("Initializing HikariCP pool for database: {} (user: {})", EnvConfig.getDbUrl(), EnvConfig.getDbUser());
             dataSource = new HikariDataSource(config);
             LOGGER.info("HikariCP connection pool initialized successfully.");
         } catch (Exception e) {
