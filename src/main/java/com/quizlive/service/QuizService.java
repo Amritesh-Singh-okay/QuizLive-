@@ -55,6 +55,12 @@ public class QuizService {
             q.setCorrectOption(opt);
         }
 
+        if (quiz.getAccessCode() == null || quiz.getAccessCode().trim().isEmpty()) {
+            quiz.setAccessCode(Quiz.generateAccessCode());
+        } else {
+            quiz.setAccessCode(quiz.getAccessCode().trim().toUpperCase());
+        }
+
         return quizDao.createWithQuestions(quiz);
     }
 
@@ -68,6 +74,17 @@ public class QuizService {
 
     public List<Quiz> getApprovedQuizzes() throws SQLException {
         return quizDao.listApproved();
+    }
+
+    public List<Quiz> getApprovedPublicQuizzes() throws SQLException {
+        return quizDao.listApprovedPublic();
+    }
+
+    public Quiz findByAccessCode(String accessCode) throws SQLException {
+        if (accessCode == null || accessCode.trim().isEmpty()) {
+            return null;
+        }
+        return quizDao.findByAccessCode(accessCode.trim().toUpperCase());
     }
 
     public List<Quiz> getQuizzesByCreator(int creatorId) throws SQLException {
@@ -146,5 +163,19 @@ public class QuizService {
         }
 
         return quizDao.updateScheduledStart(quizId, scheduledStartAt);
+    }
+
+    public boolean updateVisibility(int quizId, boolean isPublic, int requestingUserId, boolean isAdmin)
+            throws SQLException, com.quizlive.exception.UnauthorizedException {
+        Quiz quiz = quizDao.findById(quizId);
+        if (quiz == null) {
+            throw new IllegalArgumentException("Quiz not found with ID: " + quizId);
+        }
+
+        if (!isAdmin && quiz.getCreatorId() != requestingUserId) {
+            throw new com.quizlive.exception.UnauthorizedException("Only the quiz creator or an administrator can update quiz visibility");
+        }
+
+        return quizDao.updateVisibility(quizId, isPublic);
     }
 }

@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    var config = window.LEADERBOARD_CONFIG || { contextPath: '', initialQuizId: 1 };
+    var config = window.LEADERBOARD_CONFIG || { contextPath: '', initialQuizId: 1, code: '' };
     var contextPath = config.contextPath;
     var currentQuizId = config.initialQuizId || 1;
+    var quizCode = config.code || '';
 
     var socket = null;
     var reconnectTimeout = null;
@@ -16,8 +17,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load Quizzes Dropdown
     function loadQuizzes() {
-        fetch(contextPath + '/api/quizzes')
-            .then(function(res) { return res.json(); })
+        var queryPromise;
+        if (quizCode) {
+            queryPromise = fetch(contextPath + '/api/quizzes?code=' + encodeURIComponent(quizCode))
+                .then(function(r) { return r.json(); })
+                .then(function(codeRes) {
+                    if (codeRes && codeRes.success && codeRes.data && codeRes.data.id) {
+                        currentQuizId = codeRes.data.id;
+                    }
+                    return fetch(contextPath + '/api/quizzes').then(function(res) { return res.json(); });
+                })
+                .catch(function() {
+                    return fetch(contextPath + '/api/quizzes').then(function(res) { return res.json(); });
+                });
+        } else {
+            queryPromise = fetch(contextPath + '/api/quizzes').then(function(res) { return res.json(); });
+        }
+
+        queryPromise
             .then(function(resData) {
                 if (resData && resData.success && resData.data && resData.data.length > 0) {
                     if (quizSelect) {
@@ -34,6 +51,29 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             quizSelect.appendChild(opt);
                         });
+
+                        if (!foundCurrent && currentQuizId > 0) {
+                            fetch(contextPath + '/api/quizzes?id=' + currentQuizId)
+                                .then(function(r) { return r.json(); })
+                                .then(function(singleData) {
+                                    if (singleData && singleData.success && singleData.data) {
+                                        var q = singleData.data;
+                                        var opt = document.createElement('option');
+                                        opt.value = q.id;
+                                        opt.textContent = '#' + q.id + ': ' + q.title + ' (Private)';
+                                        opt.selected = true;
+                                        quizSelect.insertBefore(opt, quizSelect.firstChild);
+                                    } else {
+                                        currentQuizId = resData.data[0].id;
+                                        quizSelect.value = currentQuizId;
+                                    }
+                                    connectWebSocket(currentQuizId);
+                                })
+                                .catch(function() {
+                                    connectWebSocket(currentQuizId);
+                                });
+                            return;
+                        }
 
                         if (!foundCurrent && resData.data.length > 0) {
                             currentQuizId = resData.data[0].id;

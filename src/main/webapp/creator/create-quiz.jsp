@@ -1,5 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.quizlive.model.AppUser" %>
 <%
+    AppUser user = (session != null) ? (AppUser) session.getAttribute("user") : null;
+    boolean canDirectPublish = (user != null && user.canPublishDirectly());
     request.setAttribute("pageTitle", "Create Quiz - QuizLive");
     request.setAttribute("activeNav", "create-quiz");
 %>
@@ -14,6 +17,29 @@
             Define assessment parameters, author multiple-choice questions, and set the proctored duration.
         </p>
     </div>
+
+    <% if (canDirectPublish) { %>
+        <div class="alert alert-success" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B7354" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <div>
+                <strong>Verified Teacher Rank:</strong> Direct publishing enabled! Your assessment will become live and active immediately upon creation without waiting for admin approval.
+            </div>
+        </div>
+    <% } else { %>
+        <div class="alert alert-warning" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B87333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div>
+                <strong>Standard Creator Rank:</strong> Quizzes authored under standard rank are placed into the administrator moderation queue (Pending Review) prior to going live.
+            </div>
+        </div>
+    <% } %>
 
     <form id="create-quiz-form" data-context-path="<%= request.getContextPath() %>">
         <!-- Basic Settings Card -->
@@ -36,6 +62,27 @@
                     <label for="quiz-duration" class="form-label">Proctored Duration (Seconds) *</label>
                     <input type="number" id="quiz-duration" class="form-control" value="300" min="30" max="7200" required>
                     <p class="form-help">Total test duration in seconds (e.g. 300 = 5 minutes, 600 = 10 minutes).</p>
+                </div>
+
+                <!-- Access Code & Visibility Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group">
+                        <label for="quiz-access-code" class="form-label">Access Code (Optional)</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="quiz-access-code" class="form-control" placeholder="e.g. BIO101" maxlength="32" style="text-transform: uppercase; font-family: monospace; font-weight: 700;">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-generate-code" style="white-space: nowrap;">Generate</button>
+                        </div>
+                        <p class="form-help">Leave empty to auto-generate. Students can join using this code.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quiz-is-public" class="form-label">Catalog Visibility *</label>
+                        <select id="quiz-is-public" class="form-select">
+                            <option value="true" selected>Public Catalog (Visible to all students)</option>
+                            <option value="false">Private / Unlisted (Hidden from catalog, join with code)</option>
+                        </select>
+                        <p class="form-help">Unlisted quizzes do not clutter the public catalog.</p>
+                    </div>
                 </div>
 
                 <div style="margin-top: 1.5rem; padding: 1.25rem; background: var(--bg-surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
@@ -88,7 +135,7 @@
                     + Add Question
                 </button>
                 <button type="submit" id="save-quiz-btn" class="btn btn-primary btn-lg">
-                    Publish Quiz for Approval
+                    <%= canDirectPublish ? "Publish Quiz Directly" : "Publish Quiz for Approval" %>
                 </button>
             </div>
         </div>

@@ -16,6 +16,10 @@ public interface UserDao {
 
     boolean update(AppUser user) throws SQLException;
 
+    default boolean updateRank(int id, String rank) throws SQLException {
+        return false;
+    }
+
     boolean delete(int id) throws SQLException;
 
     List<AppUser> listAll() throws SQLException;

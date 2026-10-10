@@ -129,6 +129,8 @@ public class LoginServlet extends HttpServlet {
         data.put("name", user.getName());
         data.put("email", user.getEmail());
         data.put("role", user.getRole().name());
+        data.put("rank", user.getRank());
+        data.put("canPublishDirectly", user.canPublishDirectly());
         data.put("redirectUrl", resolveDashboardUrl(req, user.getRole()));
         return data;
     }

@@ -22,13 +22,19 @@ import java.sql.SQLException;
 public class CreateQuizServlet extends HttpServlet {
 
     private final QuizService quizService;
+    private final com.quizlive.dao.UserDao userDao;
 
     public CreateQuizServlet() {
-        this(new QuizService());
+        this(new QuizService(), new com.quizlive.dao.impl.UserDaoImpl());
     }
 
     public CreateQuizServlet(QuizService quizService) {
+        this(quizService, new com.quizlive.dao.impl.UserDaoImpl());
+    }
+
+    public CreateQuizServlet(QuizService quizService, com.quizlive.dao.UserDao userDao) {
         this.quizService = quizService;
+        this.userDao = userDao;
     }
 
     @Override
@@ -94,7 +100,25 @@ public class CreateQuizServlet extends HttpServlet {
         }
 
         quiz.setCreatorId(user.getId());
-        quiz.setStatus(QuizStatus.PENDING);
+
+        // Check if user has verified rank for direct publishing without waiting for admin approval
+        boolean canDirectPublish = user.canPublishDirectly();
+        if (userDao != null) {
+            try {
+                AppUser freshUser = userDao.findById(user.getId());
+                if (freshUser != null) {
+                    session.setAttribute("user", freshUser);
+                    canDirectPublish = freshUser.canPublishDirectly();
+                }
+            } catch (SQLException ignored) {
+            }
+        }
+
+        if (canDirectPublish) {
+            quiz.setStatus(QuizStatus.APPROVED);
+        } else {
+            quiz.setStatus(QuizStatus.PENDING);
+        }
 
         try {
             Quiz created = quizService.createQuiz(quiz);

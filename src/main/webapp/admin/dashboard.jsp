@@ -121,6 +121,7 @@
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Current Role</th>
+                        <th>Creator Rank &amp; Publish</th>
                         <th>Change Role</th>
                         <th>Created At</th>
                         <th>Actions</th>
@@ -128,7 +129,7 @@
                 </thead>
                 <tbody id="users-tbody">
                     <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
                             Loading user accounts...
                         </td>
                     </tr>

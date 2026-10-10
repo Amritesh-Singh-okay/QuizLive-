@@ -17,7 +17,11 @@ public class Participant extends AppUser {
     }
 
     public Participant(int id, String name, String email, String passwordHash, String salt, Timestamp createdAt) {
-        super(id, name, email, passwordHash, salt, Role.PARTICIPANT, createdAt);
+        super(id, name, email, passwordHash, salt, Role.PARTICIPANT, "STANDARD", createdAt);
+    }
+
+    public Participant(int id, String name, String email, String passwordHash, String salt, String rank, Timestamp createdAt) {
+        super(id, name, email, passwordHash, salt, Role.PARTICIPANT, rank, createdAt);
     }
 
     @Override
@@ -27,6 +31,11 @@ public class Participant extends AppUser {
 
     @Override
     public boolean canApproveQuiz() {
+        return false;
+    }
+
+    @Override
+    public boolean canPublishDirectly() {
         return false;
     }
 

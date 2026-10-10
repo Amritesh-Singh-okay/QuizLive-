@@ -1,6 +1,9 @@
 package com.quizlive.servlet;
 
+import com.quizlive.dao.UserDao;
+import com.quizlive.dao.impl.UserDaoImpl;
 import com.quizlive.model.AppUser;
+import com.quizlive.model.Quiz;
 import com.quizlive.model.enums.Role;
 import com.quizlive.service.QuizService;
 import com.quizlive.util.JsonUtil;
@@ -21,13 +24,19 @@ import java.util.Map;
 public class ApproveQuizServlet extends HttpServlet {
 
     private final QuizService quizService;
+    private final UserDao userDao;
 
     public ApproveQuizServlet() {
-        this(new QuizService());
+        this(new QuizService(), new UserDaoImpl());
     }
 
     public ApproveQuizServlet(QuizService quizService) {
+        this(quizService, new UserDaoImpl());
+    }
+
+    public ApproveQuizServlet(QuizService quizService, UserDao userDao) {
         this.quizService = quizService;
+        this.userDao = userDao;
     }
 
     @Override
@@ -47,8 +56,20 @@ public class ApproveQuizServlet extends HttpServlet {
             return;
         }
 
+        // Refresh user from database to ensure fresh creator rank privileges
+        if (userDao != null) {
+            try {
+                AppUser freshUser = userDao.findById(user.getId());
+                if (freshUser != null) {
+                    session.setAttribute("user", freshUser);
+                    user = freshUser;
+                }
+            } catch (SQLException ignored) {
+            }
+        }
+
         if (!user.canApproveQuiz() && user.getRole() != Role.ADMIN) {
-            JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Only administrators can approve or reject quizzes");
+            JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Only administrators or approved creators can approve quizzes");
             return;
         }
 
@@ -112,6 +133,19 @@ public class ApproveQuizServlet extends HttpServlet {
         if (quizId <= 0) {
             JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Valid quizId is required");
             return;
+        }
+
+        if (user.getRole() != Role.ADMIN) {
+            try {
+                Quiz targetQuiz = quizService.findById(quizId);
+                if (targetQuiz != null && targetQuiz.getCreatorId() != user.getId()) {
+                    JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Creators can only manage their own quizzes");
+                    return;
+                }
+            } catch (SQLException e) {
+                JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error verifying quiz ownership");
+                return;
+            }
         }
 
         try {

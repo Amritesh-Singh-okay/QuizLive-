@@ -82,6 +82,11 @@ public final class DbConnectionUtil {
             LOGGER.info("Initializing HikariCP pool for database: {} (user: {})", EnvConfig.getDbUrl(), EnvConfig.getDbUser());
             dataSource = new HikariDataSource(config);
             LOGGER.info("HikariCP connection pool initialized successfully.");
+            try {
+                DatabaseInitializer.initialize();
+            } catch (Exception initEx) {
+                LOGGER.warn("Database auto-initialization warning: {}", initEx.getMessage());
+            }
         } catch (Exception e) {
             LOGGER.error("Failed to initialize HikariCP connection pool: {}", e.getMessage());
             throw new RuntimeException("Database pool initialization failed", e);

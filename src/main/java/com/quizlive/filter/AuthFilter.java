@@ -1,5 +1,7 @@
 package com.quizlive.filter;
 
+import com.quizlive.dao.UserDao;
+import com.quizlive.dao.impl.UserDaoImpl;
 import com.quizlive.model.AppUser;
 import com.quizlive.util.JsonUtil;
 import jakarta.servlet.Filter;
@@ -17,6 +19,16 @@ import java.util.Set;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
+
+    private final UserDao userDao;
+
+    public AuthFilter() {
+        this(new UserDaoImpl());
+    }
+
+    public AuthFilter(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     private static final Set<String> PUBLIC_EXACT_PATHS = Set.of(
             "/",
@@ -58,6 +70,13 @@ public class AuthFilter implements Filter {
         AppUser user = (session != null) ? (AppUser) session.getAttribute("user") : null;
 
         if (user != null) {
+            try {
+                AppUser freshUser = userDao.findById(user.getId());
+                if (freshUser != null) {
+                    session.setAttribute("user", freshUser);
+                }
+            } catch (Exception ignored) {
+            }
             chain.doFilter(request, response);
             return;
         }

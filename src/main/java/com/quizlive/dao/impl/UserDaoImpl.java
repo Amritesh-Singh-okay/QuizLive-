@@ -17,25 +17,28 @@ import java.util.List;
 public class UserDaoImpl implements UserDao {
 
     private static final String SQL_FIND_BY_ID =
-            "SELECT id, name, email, password_hash, salt, role, created_at FROM users WHERE id = ?";
+            "SELECT id, name, email, password_hash, salt, role, creator_rank, created_at FROM users WHERE id = ?";
 
     private static final String SQL_FIND_BY_EMAIL =
-            "SELECT id, name, email, password_hash, salt, role, created_at FROM users WHERE email = ?";
+            "SELECT id, name, email, password_hash, salt, role, creator_rank, created_at FROM users WHERE email = ?";
 
     private static final String SQL_INSERT =
-            "INSERT INTO users (name, email, password_hash, salt, role) VALUES (?, ?, ?, ?, ?)";
+            "INSERT INTO users (name, email, password_hash, salt, role, creator_rank) VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_UPDATE =
-            "UPDATE users SET name = ?, email = ?, password_hash = ?, salt = ?, role = ? WHERE id = ?";
+            "UPDATE users SET name = ?, email = ?, password_hash = ?, salt = ?, role = ?, creator_rank = ? WHERE id = ?";
+
+    private static final String SQL_UPDATE_RANK =
+            "UPDATE users SET creator_rank = ? WHERE id = ?";
 
     private static final String SQL_DELETE =
             "DELETE FROM users WHERE id = ?";
 
     private static final String SQL_LIST_ALL =
-            "SELECT id, name, email, password_hash, salt, role, created_at FROM users ORDER BY id ASC";
+            "SELECT id, name, email, password_hash, salt, role, creator_rank, created_at FROM users ORDER BY id ASC";
 
     private static final String SQL_LIST_BY_ROLE =
-            "SELECT id, name, email, password_hash, salt, role, created_at FROM users WHERE role = ? ORDER BY id ASC";
+            "SELECT id, name, email, password_hash, salt, role, creator_rank, created_at FROM users WHERE role = ? ORDER BY id ASC";
 
     @Override
     public AppUser findById(int id) throws SQLException {
@@ -71,12 +74,13 @@ public class UserDaoImpl implements UserDao {
     @Override
     public AppUser create(AppUser user) throws SQLException {
         try (Connection conn = DbConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
+              PreparedStatement stmt = conn.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getEmail().trim().toLowerCase());
             stmt.setString(3, user.getPasswordHash());
             stmt.setString(4, user.getSalt());
             stmt.setString(5, user.getRole().name());
+            stmt.setString(6, user.getRank() != null ? user.getRank() : "STANDARD");
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -100,14 +104,25 @@ public class UserDaoImpl implements UserDao {
     @Override
     public boolean update(AppUser user) throws SQLException {
         try (Connection conn = DbConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
+              PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getEmail().trim().toLowerCase());
             stmt.setString(3, user.getPasswordHash());
             stmt.setString(4, user.getSalt());
             stmt.setString(5, user.getRole().name());
-            stmt.setInt(6, user.getId());
+            stmt.setString(6, user.getRank() != null ? user.getRank() : "STANDARD");
+            stmt.setInt(7, user.getId());
 
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateRank(int id, String rank) throws SQLException {
+        try (Connection conn = DbConnectionUtil.getConnection();
+              PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_RANK)) {
+            stmt.setString(1, (rank != null && !rank.trim().isEmpty()) ? rank.trim().toUpperCase() : "STANDARD");
+            stmt.setInt(2, id);
             return stmt.executeUpdate() > 0;
         }
     }
@@ -115,7 +130,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public boolean delete(int id) throws SQLException {
         try (Connection conn = DbConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
+              PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
         }
@@ -125,8 +140,8 @@ public class UserDaoImpl implements UserDao {
     public List<AppUser> listAll() throws SQLException {
         List<AppUser> users = new ArrayList<>();
         try (Connection conn = DbConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_LIST_ALL);
-             ResultSet rs = stmt.executeQuery()) {
+              PreparedStatement stmt = conn.prepareStatement(SQL_LIST_ALL);
+              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 users.add(mapRowToUser(rs));
             }
@@ -138,7 +153,7 @@ public class UserDaoImpl implements UserDao {
     public List<AppUser> listByRole(Role role) throws SQLException {
         List<AppUser> users = new ArrayList<>();
         try (Connection conn = DbConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_LIST_BY_ROLE)) {
+              PreparedStatement stmt = conn.prepareStatement(SQL_LIST_BY_ROLE)) {
             stmt.setString(1, role.name());
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -156,8 +171,16 @@ public class UserDaoImpl implements UserDao {
         String passwordHash = rs.getString("password_hash");
         String salt = rs.getString("salt");
         Role role = Role.fromString(rs.getString("role"));
+        String rank = "STANDARD";
+        try {
+            String dbRank = rs.getString("creator_rank");
+            if (dbRank != null && !dbRank.trim().isEmpty()) {
+                rank = dbRank.trim().toUpperCase();
+            }
+        } catch (SQLException ignored) {
+        }
         Timestamp createdAt = rs.getTimestamp("created_at");
 
-        return AppUser.create(id, name, email, passwordHash, salt, role, createdAt);
+        return AppUser.create(id, name, email, passwordHash, salt, role, rank, createdAt);
     }
 }

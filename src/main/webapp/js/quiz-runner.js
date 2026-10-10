@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    var config = window.QUIZ_CONFIG || { contextPath: '', quizId: 1 };
+    var config = window.QUIZ_CONFIG || { contextPath: '', quizId: 0, code: '' };
     var contextPath = config.contextPath;
-    var quizId = config.quizId;
+    var quizId = config.quizId || 0;
+    var quizCode = config.code || '';
 
     var attemptId = 0;
     var questions = [];
@@ -199,13 +200,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize Quiz
     function startQuiz() {
+        var bodyPayload = {};
+        if (quizId && quizId > 0) {
+            bodyPayload.quizId = quizId;
+        }
+        if (quizCode) {
+            bodyPayload.code = quizCode;
+        }
+
         fetch(contextPath + '/api/attempts/start', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ quizId: quizId })
+            body: JSON.stringify(bodyPayload)
         })
         .then(function(res) {
             return res.json().then(function(data) {
@@ -215,16 +224,23 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(result) {
             if (result.status === 423 || (result.data && (result.data.waitingRoom || (result.data.data && result.data.data.waitingRoom)))) {
                 var lobbyData = (result.data && result.data.data) ? result.data.data : {};
+                if (lobbyData.quizId) {
+                    quizId = lobbyData.quizId;
+                }
                 enterWaitingRoom(lobbyData);
                 return;
             }
 
             if (result.status === 409) {
+                var resolvedQuizId = (result.data && result.data.data && result.data.data.quizId) || (result.data && result.data.quizId) || quizId;
+                if (resolvedQuizId) {
+                    quizId = resolvedQuizId;
+                }
                 if (window.showToast) {
                     window.showToast('warning', 'You have already completed this quiz. Redirecting to leaderboard...');
                 }
                 setTimeout(function() {
-                    window.location.href = contextPath + '/leaderboard.jsp?quizId=' + quizId;
+                    window.location.href = contextPath + '/leaderboard.jsp?quizId=' + (quizId && quizId > 0 ? quizId : 1);
                 }, 1500);
                 return;
             }
@@ -254,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var attemptData = result.data.data;
             attemptId = attemptData.attemptId;
+            quizId = attemptData.quizId || quizId;
             durationSeconds = attemptData.durationSeconds || 300;
             remainingSeconds = durationSeconds;
             questions = attemptData.questions || [];

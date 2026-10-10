@@ -19,6 +19,14 @@ public interface QuizDao {
 
     List<Quiz> listApproved() throws SQLException;
 
+    default List<Quiz> listApprovedPublic() throws SQLException {
+        return listApproved();
+    }
+
+    default Quiz findByAccessCode(String accessCode) throws SQLException {
+        return null;
+    }
+
     List<Quiz> listByCreator(int creatorId) throws SQLException;
 
     List<Quiz> listByStatus(QuizStatus status) throws SQLException;
@@ -30,6 +38,10 @@ public interface QuizDao {
     }
 
     default boolean updateScheduledStart(int quizId, Timestamp scheduledStartAt) throws SQLException {
+        return false;
+    }
+
+    default boolean updateVisibility(int quizId, boolean isPublic) throws SQLException {
         return false;
     }
 

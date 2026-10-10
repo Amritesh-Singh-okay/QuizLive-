@@ -24,12 +24,16 @@ public class Quiz implements Serializable {
     private QuizStatus status;
     private boolean isHeld;
     private Timestamp scheduledStartAt;
+    private String accessCode;
+    private boolean isPublic = true;
     private Timestamp createdAt;
     private List<Question> questions;
 
     public Quiz() {
         this.status = QuizStatus.PENDING;
         this.questions = new ArrayList<>();
+        this.isPublic = true;
+        this.accessCode = generateAccessCode();
     }
 
     public Quiz(int id, String title, String description, int creatorId, int durationSeconds, QuizStatus status, Timestamp createdAt) {
@@ -41,6 +45,34 @@ public class Quiz implements Serializable {
         this.status = status;
         this.createdAt = createdAt;
         this.questions = new ArrayList<>();
+        this.isPublic = true;
+        this.accessCode = generateAccessCode();
+    }
+
+    public Quiz(int id, String title, String description, int creatorId, int durationSeconds, QuizStatus status, String accessCode, boolean isPublic, Timestamp createdAt) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.creatorId = creatorId;
+        this.durationSeconds = durationSeconds;
+        this.status = status;
+        this.accessCode = (accessCode != null && !accessCode.trim().isEmpty()) ? accessCode.trim().toUpperCase() : generateAccessCode();
+        this.isPublic = isPublic;
+        this.createdAt = createdAt;
+        this.questions = new ArrayList<>();
+    }
+
+    /**
+     * Generates a random alphanumeric access code for quiz participation.
+     */
+    public static String generateAccessCode() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder("QZ-");
+        for (int i = 0; i < 4; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     /**
@@ -171,6 +203,22 @@ public class Quiz implements Serializable {
 
     public void setScheduledStartTime(Timestamp scheduledStartTime) {
         this.scheduledStartAt = scheduledStartTime;
+    }
+
+    public String getAccessCode() {
+        return accessCode;
+    }
+
+    public void setAccessCode(String accessCode) {
+        this.accessCode = (accessCode != null && !accessCode.trim().isEmpty()) ? accessCode.trim().toUpperCase() : null;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     /**

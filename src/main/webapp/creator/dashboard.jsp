@@ -2,6 +2,8 @@
 <%@ page import="com.quizlive.model.AppUser" %>
 <%
     AppUser user = (session != null) ? (AppUser) session.getAttribute("user") : null;
+    boolean canDirectPublish = (user != null && user.canPublishDirectly());
+    String rankName = (user != null && user.getRank() != null) ? user.getRank() : "STANDARD";
     request.setAttribute("pageTitle", "Creator Studio - QuizLive");
     request.setAttribute("activeNav", "dashboard");
 %>
@@ -10,11 +12,16 @@
 <div class="container">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
         <div>
-            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
-                Creator Studio
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Design timed assessments, inspect candidate responses, and monitor proctor integrity logs.
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+                    Creator Studio
+                </h1>
+                <span class="badge" style="<%= canDirectPublish ? "background: rgba(59, 115, 84, 0.15); color: #3B7354; border: 1px solid rgba(59, 115, 84, 0.35); font-weight: 700;" : "background: rgba(184, 115, 51, 0.15); color: #B87333; border: 1px solid rgba(184, 115, 51, 0.35);" %>">
+                    <%= canDirectPublish ? "★ Verified Teacher Rank (Direct Publishing Enabled)" : "Standard Creator (" + rankName + " — Moderation Required)" %>
+                </span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.35rem;">
+                Design timed assessments, manage access codes, and monitor candidate responses and proctor integrity.
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
@@ -82,6 +89,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Quiz Title</th>
+                        <th>Access Code &amp; Visibility</th>
                         <th>Duration</th>
                         <th>Questions</th>
                         <th>Status &amp; Live Lobby</th>
@@ -90,7 +98,7 @@
                 </thead>
                 <tbody id="creator-quizzes-tbody">
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
                             Loading your quizzes...
                         </td>
                     </tr>
@@ -143,6 +151,7 @@
 
 <script>
     var contextPath = '<%= request.getContextPath() %>';
+    var canPublishDirectly = <%= canDirectPublish %>;
 
     function loadMyQuizzes() {
         var tbody = document.getElementById('creator-quizzes-tbody');
@@ -151,7 +160,7 @@
             .then(function(res) { return res.json(); })
             .then(function(resData) {
                 if (!resData || !resData.success || !resData.data || resData.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">You have not created any quizzes yet. Click "+ Create New Quiz" above.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">You have not created any quizzes yet. Click "+ Create New Quiz" above.</td></tr>';
                     document.getElementById('stat-my-quizzes').textContent = '0';
                     document.getElementById('stat-approved').textContent = '0';
                     document.getElementById('stat-pending').textContent = '0';
@@ -196,7 +205,20 @@
                         }
                     }
 
+                    var publishButton = '';
+                    if (q.status === 'PENDING' && canPublishDirectly) {
+                        publishButton = '<button class="btn btn-primary btn-sm" onclick="publishQuizDirectly(' + q.id + ')" style="padding: 0.25rem 0.6rem; font-weight: 700;">⚡ Publish Now</button>';
+                    }
+
                     var qCount = (q.questions) ? q.questions.length : '--';
+
+                    var codeBadge = q.accessCode ?
+                        '<div style="margin-bottom: 0.3rem;"><code style="font-size: 0.82rem; font-weight: 700; background: var(--bg-surface-alt); padding: 0.2rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer;" title="Click to copy code" onclick="if(navigator.clipboard){navigator.clipboard.writeText(\'' + escapeHtml(q.accessCode) + '\');} if(window.showToast) window.showToast(\'info\', \'Copied ' + escapeHtml(q.accessCode) + ' to clipboard\');">🔑 ' + escapeHtml(q.accessCode) + '</code></div>' :
+                        '<div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">No Code</div>';
+
+                    var visBadge = q.isPublic ?
+                        '<div style="display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem;"><span class="badge" style="background: rgba(59, 115, 84, 0.12); color: #3B7354; font-size: 0.72rem; border: 1px solid rgba(59, 115, 84, 0.3);">Public</span> <button class="btn btn-outline btn-sm" style="font-size: 0.68rem; padding: 0.1rem 0.35rem;" onclick="toggleQuizVisibility(' + q.id + ', false)" title="Make Private / Unlisted">Hide</button></div>' :
+                        '<div style="display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem;"><span class="badge" style="background: rgba(96, 82, 122, 0.12); color: #60527A; font-size: 0.72rem; border: 1px solid rgba(96, 82, 122, 0.3);">Private / Unlisted</span> <button class="btn btn-outline btn-sm" style="font-size: 0.68rem; padding: 0.1rem 0.35rem;" onclick="toggleQuizVisibility(' + q.id + ', true)" title="Make Public">Publish to Catalog</button></div>';
 
                     var tr = document.createElement('tr');
                     tr.innerHTML =
@@ -205,11 +227,13 @@
                             '<strong>' + escapeHtml(q.title) + '</strong>' +
                             '<div style="font-size: 0.8rem; color: var(--text-muted);">' + escapeHtml(q.description || '') + '</div>' +
                         '</td>' +
+                        '<td>' + codeBadge + visBadge + '</td>' +
                         '<td>' + Math.round(q.durationSeconds / 60) + ' min (' + q.durationSeconds + 's)</td>' +
                         '<td>' + qCount + '</td>' +
                         '<td>' + statusBadge + liveBadge + schedNote + '</td>' +
                         '<td>' +
                             '<div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">' +
+                                publishButton +
                                 hostButton +
                                 '<a href="' + contextPath + '/participant/take-quiz.jsp?quizId=' + q.id + '" target="_blank" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.5rem;" title="Preview Lobby as Student">Lobby</a>' +
                                 '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.5rem;">Leaderboard</a>' +
@@ -224,7 +248,7 @@
                 document.getElementById('stat-pending').textContent = pendingCount;
             })
             .catch(function(err) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 2rem;">Error loading quizzes.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger); padding: 2rem;">Error loading quizzes.</td></tr>';
             });
     }
 
@@ -259,6 +283,71 @@
         })
         .catch(function(err) {
             if (window.showToast) window.showToast('error', 'Network error updating quiz host status.');
+        });
+    };
+
+    window.publishQuizDirectly = function(quizId) {
+        if (!confirm('Publish Quiz #' + quizId + ' directly now? It will become active immediately without admin moderation.')) {
+            return;
+        }
+
+        fetch(contextPath + '/api/quizzes/approve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                quizId: quizId,
+                action: 'approve'
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(resData) {
+            if (resData && resData.success) {
+                if (window.showToast) window.showToast('success', 'Quiz #' + quizId + ' published directly! Assessment is now active.');
+                loadMyQuizzes();
+            } else {
+                var err = (resData && resData.error) ? resData.error : 'Failed to publish quiz';
+                if (window.showToast) window.showToast('error', err);
+            }
+        })
+        .catch(function(err) {
+            if (window.showToast) window.showToast('error', 'Network error publishing quiz.');
+        });
+    };
+
+    window.toggleQuizVisibility = function(quizId, makePublic) {
+        var actionLabel = makePublic ? 'make this quiz visible in the public catalog' : 'make this quiz private (unlisted, accessible only via access code)';
+        if (!confirm('Are you sure you want to ' + actionLabel + '?')) {
+            return;
+        }
+
+        fetch(contextPath + '/api/quizzes/host', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                quizId: quizId,
+                action: 'visibility',
+                isPublic: makePublic
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(resData) {
+            if (resData && resData.success) {
+                var msg = resData.data && resData.data.message ? resData.data.message : 'Quiz visibility updated!';
+                if (window.showToast) window.showToast('success', msg);
+                loadMyQuizzes();
+            } else {
+                var err = (resData && resData.error) ? resData.error : 'Failed to update visibility';
+                if (window.showToast) window.showToast('error', err);
+            }
+        })
+        .catch(function(err) {
+            if (window.showToast) window.showToast('error', 'Network error updating visibility.');
         });
     };
 

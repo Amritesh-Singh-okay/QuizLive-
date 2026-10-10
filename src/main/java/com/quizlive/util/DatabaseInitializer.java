@@ -50,6 +50,30 @@ public final class DatabaseInitializer {
                 stmt.execute("ALTER TABLE quizzes ADD COLUMN scheduled_start_at TIMESTAMP NULL");
             } catch (Exception ignored) {
             }
+            try {
+                stmt.execute("ALTER TABLE users ADD COLUMN creator_rank VARCHAR(50) DEFAULT 'STANDARD'");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("ALTER TABLE quizzes ADD COLUMN access_code VARCHAR(32) NULL UNIQUE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("ALTER TABLE quizzes ADD COLUMN is_public BOOLEAN DEFAULT TRUE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("UPDATE quizzes SET access_code = CONCAT('QZ-', id, '00') WHERE access_code IS NULL");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("UPDATE quizzes SET is_public = TRUE WHERE is_public IS NULL");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("UPDATE users SET creator_rank = 'STANDARD' WHERE creator_rank IS NULL");
+            } catch (Exception ignored) {
+            }
         } catch (Exception e) {
             LOGGER.debug("Schema migration notice: {}", e.getMessage());
         }

@@ -3,12 +3,17 @@
     request.setAttribute("pageTitle", "Live Leaderboard - QuizLive");
     request.setAttribute("activeNav", "leaderboard");
     String quizIdParam = request.getParameter("quizId");
-    int safeQuizId = 1;
+    String codeParam = request.getParameter("code");
+    if (codeParam == null || codeParam.trim().isEmpty()) {
+        codeParam = request.getParameter("accessCode");
+    }
+    int safeQuizId = 0;
     if (quizIdParam != null && !quizIdParam.trim().isEmpty()) {
         try {
             safeQuizId = Integer.parseInt(quizIdParam.trim());
         } catch (NumberFormatException ignored) {}
     }
+    String cleanCode = (codeParam != null) ? codeParam.trim().toUpperCase().replaceAll("[^a-zA-Z0-9_-]", "") : "";
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -105,7 +110,8 @@
 <script>
     window.LEADERBOARD_CONFIG = {
         contextPath: '<%= request.getContextPath() %>',
-        initialQuizId: <%= safeQuizId %>
+        initialQuizId: <%= (safeQuizId > 0 ? safeQuizId : 1) %>,
+        code: '<%= cleanCode %>'
     };
 </script>
 <script src="<%= request.getContextPath() %>/js/leaderboard.js"></script>

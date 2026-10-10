@@ -134,8 +134,17 @@ public class HostQuizServlet extends HttpServlet {
                 result.put("scheduled", success);
                 result.put("message", scheduledTime != null ? "Quiz start scheduled successfully." : "Scheduled start time cleared.");
                 JsonUtil.sendSuccess(resp, result);
+            } else if ("visibility".equalsIgnoreCase(action)) {
+                boolean isPublic = parseIsPublic(req, bodyJson);
+                boolean success = quizService.updateVisibility(quizId, isPublic, user.getId(), isAdmin);
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("quizId", quizId);
+                result.put("isPublic", isPublic);
+                result.put("updated", success);
+                result.put("message", isPublic ? "Quiz is now visible in the public catalog." : "Quiz is now unlisted (private, accessible via access code).");
+                JsonUtil.sendSuccess(resp, result);
             } else {
-                JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Unsupported action: " + action + ". Supported actions: start, hold, schedule.");
+                JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Unsupported action: " + action + ". Supported actions: start, hold, schedule, visibility.");
             }
         } catch (UnauthorizedException e) {
             JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -237,5 +246,20 @@ public class HostQuizServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private boolean parseIsPublic(HttpServletRequest req, JsonObject json) {
+        if (json != null && json.has("isPublic") && !json.get("isPublic").isJsonNull()) {
+            try {
+                return json.get("isPublic").getAsBoolean();
+            } catch (Exception ignored) {
+                return !"false".equalsIgnoreCase(json.get("isPublic").getAsString());
+            }
+        }
+        String param = req.getParameter("isPublic");
+        if (param != null) {
+            return !"false".equalsIgnoreCase(param.trim());
+        }
+        return true;
     }
 }

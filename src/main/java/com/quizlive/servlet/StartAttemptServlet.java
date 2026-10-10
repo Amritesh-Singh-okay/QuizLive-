@@ -54,7 +54,7 @@ public class StartAttemptServlet extends HttpServlet {
 
         int quizId = parseQuizId(req);
         if (quizId <= 0) {
-            JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Valid quizId is required");
+            JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Valid quizId or quiz code is required");
             return;
         }
 
@@ -89,7 +89,21 @@ public class StartAttemptServlet extends HttpServlet {
             Attempt existing = attemptDao.findByQuizAndUser(quizId, user.getId());
             if (existing != null) {
                 if (existing.getStatus() == AttemptStatus.SUBMITTED || existing.getStatus() == AttemptStatus.AUTO_SUBMITTED) {
-                    JsonUtil.sendError(resp, HttpServletResponse.SC_CONFLICT, "You have already completed this quiz");
+                    resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                    resp.setContentType("application/json");
+                    resp.setCharacterEncoding("UTF-8");
+                    Map<String, Object> errBody = new LinkedHashMap<>();
+                    errBody.put("success", false);
+                    errBody.put("error", "You have already completed this quiz");
+                    Map<String, Object> conflictData = new LinkedHashMap<>();
+                    conflictData.put("quizId", quizId);
+                    conflictData.put("attemptId", existing.getId());
+                    conflictData.put("alreadyCompleted", true);
+                    errBody.put("data", conflictData);
+                    try (java.io.PrintWriter writer = resp.getWriter()) {
+                        writer.write(JsonUtil.toJson(errBody));
+                        writer.flush();
+                    }
                     return;
                 }
 
@@ -133,6 +147,17 @@ public class StartAttemptServlet extends HttpServlet {
                             return ((Number) map.get("quizId")).intValue();
                         } else if (map.get("id") != null) {
                             return ((Number) map.get("id")).intValue();
+                        } else if (map.get("code") != null || map.get("accessCode") != null) {
+                            Object codeObj = map.get("code") != null ? map.get("code") : map.get("accessCode");
+                            if (codeObj != null) {
+                                try {
+                                    Quiz q = quizService.findByAccessCode(codeObj.toString().trim());
+                                    if (q != null) {
+                                        return q.getId();
+                                    }
+                                } catch (SQLException ignored) {
+                                }
+                            }
                         }
                     }
                 } catch (JsonSyntaxException ignored) {
@@ -148,6 +173,20 @@ public class StartAttemptServlet extends HttpServlet {
             try {
                 return Integer.parseInt(idParam.trim());
             } catch (NumberFormatException ignored) {
+            }
+        }
+
+        String codeParam = req.getParameter("code");
+        if (codeParam == null || codeParam.isEmpty()) {
+            codeParam = req.getParameter("accessCode");
+        }
+        if (codeParam != null && !codeParam.trim().isEmpty()) {
+            try {
+                Quiz q = quizService.findByAccessCode(codeParam.trim());
+                if (q != null) {
+                    return q.getId();
+                }
+            } catch (SQLException ignored) {
             }
         }
 

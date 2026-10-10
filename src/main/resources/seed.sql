@@ -6,19 +6,19 @@
 USE quizlive;
 
 -- 1. Insert Initial Users
-INSERT INTO users (id, name, email, password_hash, salt, role) VALUES
-(1, 'System Administrator', 'admin@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'ADMIN'),
-(2, 'Prof. Arvind Sharma', 'creator@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'CREATOR'),
-(3, 'Alice Johnson', 'alice@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT'),
-(4, 'Bob Smith', 'bob@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT'),
-(5, 'Charlie Brown', 'charlie@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT')
+INSERT INTO users (id, name, email, password_hash, salt, role, creator_rank) VALUES
+(1, 'System Administrator', 'admin@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'ADMIN', 'VERIFIED'),
+(2, 'Prof. Arvind Sharma', 'creator@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'CREATOR', 'STANDARD'),
+(3, 'Alice Johnson', 'alice@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT', 'STANDARD'),
+(4, 'Bob Smith', 'bob@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT', 'STANDARD'),
+(5, 'Charlie Brown', 'charlie@quizlive.com', '958b3891df8f6f164ed2c3384bbefc07e9c7498b7cef40359bc3fc4a6e746895', 'f5974143ae362d2cbcb6489d0c088da1', 'PARTICIPANT', 'STANDARD')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 -- 2. Insert Sample Quizzes
-INSERT INTO quizzes (id, title, description, creator_id, duration_seconds, status) VALUES
-(1, 'Core Java Fundamentals', 'Test your knowledge on Java data types, loops, memory management, and exceptions.', 2, 300, 'APPROVED'),
-(2, 'Object-Oriented Programming (OOP)', 'Master OOP concepts: Inheritance, Polymorphism, Abstraction, and Encapsulation.', 2, 450, 'APPROVED'),
-(3, 'Multithreading & Concurrency in Java', 'Advanced challenges on Threads, Synchronization, ConcurrentHashMap, and Executors.', 2, 600, 'PENDING')
+INSERT INTO quizzes (id, title, description, creator_id, duration_seconds, status, access_code, is_public) VALUES
+(1, 'Core Java Fundamentals', 'Test your knowledge on Java data types, loops, memory management, and exceptions.', 2, 300, 'APPROVED', 'JAVA101', TRUE),
+(2, 'Object-Oriented Programming (OOP)', 'Master OOP concepts: Inheritance, Polymorphism, Abstraction, and Encapsulation.', 2, 450, 'APPROVED', 'OOP201', TRUE),
+(3, 'Multithreading & Concurrency in Java', 'Advanced challenges on Threads, Synchronization, ConcurrentHashMap, and Executors.', 2, 600, 'PENDING', 'THREAD301', TRUE)
 ON DUPLICATE KEY UPDATE title=VALUES(title);
 
 -- 3. Insert Questions for Quiz 1: Core Java Fundamentals

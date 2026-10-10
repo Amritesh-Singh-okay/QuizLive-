@@ -17,7 +17,11 @@ public class QuizCreator extends AppUser {
     }
 
     public QuizCreator(int id, String name, String email, String passwordHash, String salt, Timestamp createdAt) {
-        super(id, name, email, passwordHash, salt, Role.CREATOR, createdAt);
+        super(id, name, email, passwordHash, salt, Role.CREATOR, "STANDARD", createdAt);
+    }
+
+    public QuizCreator(int id, String name, String email, String passwordHash, String salt, String rank, Timestamp createdAt) {
+        super(id, name, email, passwordHash, salt, Role.CREATOR, rank, createdAt);
     }
 
     @Override
@@ -27,7 +31,12 @@ public class QuizCreator extends AppUser {
 
     @Override
     public boolean canApproveQuiz() {
-        return false;
+        return isRankApproved();
+    }
+
+    @Override
+    public boolean canPublishDirectly() {
+        return isRankApproved();
     }
 
     @Override

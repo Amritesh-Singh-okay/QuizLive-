@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "UserManagementServlet", urlPatterns = {"/admin/users", "/api/admin/users", "/admin/users/delete", "/api/admin/users/delete", "/admin/users/update-role", "/api/admin/users/update-role"})
+@WebServlet(name = "UserManagementServlet", urlPatterns = {"/admin/users", "/api/admin/users", "/admin/users/delete", "/api/admin/users/delete", "/admin/users/update-role", "/api/admin/users/update-role", "/admin/users/update-rank", "/api/admin/users/update-rank"})
 public class UserManagementServlet extends HttpServlet {
 
     private final UserDao userDao;
@@ -95,6 +95,8 @@ public class UserManagementServlet extends HttpServlet {
             handleDeleteUser(req, resp, user, params);
         } else if (path.endsWith("/update-role") || "update-role".equalsIgnoreCase(action)) {
             handleUpdateRole(req, resp, params);
+        } else if (path.endsWith("/update-rank") || "update-rank".equalsIgnoreCase(action) || "approve-rank".equalsIgnoreCase(action)) {
+            handleUpdateRank(req, resp, params);
         } else {
             JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid admin user operation");
         }
@@ -169,6 +171,45 @@ public class UserManagementServlet extends HttpServlet {
         }
     }
 
+    private void handleUpdateRank(HttpServletRequest req, HttpServletResponse resp, Map<String, String> params)
+            throws IOException {
+        int targetId = parseTargetId(params);
+        String rankStr = params.get("rank");
+        if (rankStr == null || rankStr.trim().isEmpty()) {
+            rankStr = "VERIFIED";
+        }
+
+        if (targetId <= 0) {
+            JsonUtil.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Valid userId is required");
+            return;
+        }
+
+        try {
+            AppUser target = userDao.findById(targetId);
+            if (target == null) {
+                JsonUtil.sendError(resp, HttpServletResponse.SC_NOT_FOUND, "User not found");
+                return;
+            }
+
+            String normalizedRank = rankStr.trim().toUpperCase();
+            target.setRank(normalizedRank);
+            boolean updated = userDao.update(target);
+            if (!updated) {
+                JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update user rank");
+                return;
+            }
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("message", "User rank updated successfully");
+            data.put("userId", targetId);
+            data.put("rank", normalizedRank);
+            data.put("canPublishDirectly", target.canPublishDirectly());
+            JsonUtil.sendSuccess(resp, data);
+        } catch (SQLException e) {
+            JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error updating user rank: " + e.getMessage());
+        }
+    }
+
     private int parseTargetId(Map<String, String> params) {
         String idStr = params.get("userId");
         if (idStr == null || idStr.isEmpty()) {
@@ -225,6 +266,8 @@ public class UserManagementServlet extends HttpServlet {
         map.put("name", u.getName());
         map.put("email", u.getEmail());
         map.put("role", u.getRole().name());
+        map.put("rank", u.getRank());
+        map.put("canPublishDirectly", u.canPublishDirectly());
         map.put("createdAt", u.getCreatedAt());
         return map;
     }

@@ -20,26 +20,34 @@ public class QuizDaoImpl implements QuizDao {
     private final QuestionDao questionDao;
 
     private static final String SQL_INSERT_QUIZ =
-            "INSERT INTO quizzes (title, description, creator_id, duration_seconds, status, is_held, scheduled_start_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO quizzes (title, description, creator_id, duration_seconds, status, is_held, scheduled_start_at, access_code, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_FIND_BY_ID =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.id = ?";
 
+    private static final String SQL_FIND_BY_ACCESS_CODE =
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
+            "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE UPPER(q.access_code) = ?";
+
     private static final String SQL_LIST_ALL =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id ORDER BY q.id DESC";
 
     private static final String SQL_LIST_APPROVED =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.status = 'APPROVED' ORDER BY q.id DESC";
 
+    private static final String SQL_LIST_APPROVED_PUBLIC =
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
+            "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.status = 'APPROVED' AND (q.is_public = TRUE OR q.is_public IS NULL) ORDER BY q.id DESC";
+
     private static final String SQL_LIST_BY_CREATOR =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.creator_id = ? ORDER BY q.id DESC";
 
     private static final String SQL_LIST_BY_STATUS =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.access_code, q.is_public, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.status = ? ORDER BY q.id DESC";
 
     private static final String SQL_UPDATE_STATUS =
@@ -50,6 +58,9 @@ public class QuizDaoImpl implements QuizDao {
 
     private static final String SQL_UPDATE_SCHEDULED_START =
             "UPDATE quizzes SET scheduled_start_at = ? WHERE id = ?";
+
+    private static final String SQL_UPDATE_VISIBILITY =
+            "UPDATE quizzes SET is_public = ? WHERE id = ?";
 
     private static final String SQL_DELETE =
             "DELETE FROM quizzes WHERE id = ?";
@@ -77,6 +88,11 @@ public class QuizDaoImpl implements QuizDao {
                 stmt.setString(5, quiz.getStatus().name());
                 stmt.setBoolean(6, quiz.isHeld());
                 stmt.setTimestamp(7, quiz.getScheduledStartAt());
+                if (quiz.getAccessCode() == null || quiz.getAccessCode().trim().isEmpty()) {
+                    quiz.setAccessCode(Quiz.generateAccessCode());
+                }
+                stmt.setString(8, quiz.getAccessCode());
+                stmt.setBoolean(9, quiz.isPublic());
 
                 int affected = stmt.executeUpdate();
                 if (affected == 0) {
@@ -154,6 +170,28 @@ public class QuizDaoImpl implements QuizDao {
     }
 
     @Override
+    public List<Quiz> listApprovedPublic() throws SQLException {
+        return queryList(SQL_LIST_APPROVED_PUBLIC, null);
+    }
+
+    @Override
+    public Quiz findByAccessCode(String accessCode) throws SQLException {
+        if (accessCode == null || accessCode.trim().isEmpty()) {
+            return null;
+        }
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_ACCESS_CODE)) {
+            stmt.setString(1, accessCode.trim().toUpperCase());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToQuiz(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public List<Quiz> listByCreator(int creatorId) throws SQLException {
         return queryList(SQL_LIST_BY_CREATOR, stmt -> stmt.setInt(1, creatorId));
     }
@@ -188,6 +226,16 @@ public class QuizDaoImpl implements QuizDao {
         try (Connection conn = DbConnectionUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_SCHEDULED_START)) {
             stmt.setTimestamp(1, scheduledStartAt);
+            stmt.setInt(2, quizId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateVisibility(int quizId, boolean isPublic) throws SQLException {
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_VISIBILITY)) {
+            stmt.setBoolean(1, isPublic);
             stmt.setInt(2, quizId);
             return stmt.executeUpdate() > 0;
         }
@@ -240,6 +288,18 @@ public class QuizDaoImpl implements QuizDao {
         }
         try {
             quiz.setScheduledStartAt(rs.getTimestamp("scheduled_start_at"));
+        } catch (SQLException ignored) {
+        }
+        try {
+            String code = rs.getString("access_code");
+            if (code != null && !code.trim().isEmpty()) {
+                quiz.setAccessCode(code.trim().toUpperCase());
+            }
+        } catch (SQLException ignored) {
+        }
+        try {
+            boolean isPub = rs.getBoolean("is_public");
+            quiz.setPublic(rs.wasNull() || isPub);
         } catch (SQLException ignored) {
         }
         return quiz;

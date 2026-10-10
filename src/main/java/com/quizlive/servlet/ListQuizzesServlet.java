@@ -40,12 +40,14 @@ public class ListQuizzesServlet extends HttpServlet {
         if (idParam != null && !idParam.trim().isEmpty()) {
             try {
                 int quizId = Integer.parseInt(idParam.trim());
-                if (user != null && (user.getRole() == Role.ADMIN || user.getRole() == Role.CREATOR)) {
+                Quiz existingQuiz = quizService.findById(quizId);
+                if (existingQuiz == null) {
+                    JsonUtil.sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Quiz not found");
+                    return;
+                }
+                boolean canViewAnswers = (user != null && (user.getRole() == Role.ADMIN || (user.getRole() == Role.CREATOR && existingQuiz.getCreatorId() == user.getId())));
+                if (canViewAnswers) {
                     Quiz quiz = quizService.getQuizWithAnswers(quizId);
-                    if (quiz == null) {
-                        JsonUtil.sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Quiz not found");
-                        return;
-                    }
                     JsonUtil.sendSuccess(resp, quiz);
                 } else {
                     Quiz quiz = quizService.getQuizForTaking(quizId);
@@ -57,6 +59,44 @@ public class ListQuizzesServlet extends HttpServlet {
                 JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             } catch (SQLException e) {
                 JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error retrieving quiz");
+            }
+            return;
+        }
+
+        String codeParam = req.getParameter("code");
+        if (codeParam != null && !codeParam.trim().isEmpty()) {
+            try {
+                Quiz quiz = quizService.findByAccessCode(codeParam.trim());
+                if (quiz == null) {
+                    try {
+                        int potentialId = Integer.parseInt(codeParam.trim());
+                        quiz = quizService.findById(potentialId);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+
+                if (quiz == null) {
+                    JsonUtil.sendError(resp, HttpServletResponse.SC_NOT_FOUND, "No quiz found matching code: " + codeParam.trim());
+                    return;
+                }
+
+                if (quiz.getStatus() != com.quizlive.model.enums.QuizStatus.APPROVED && (user == null || (user.getRole() != Role.ADMIN && user.getId() != quiz.getCreatorId()))) {
+                    JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Quiz has not been approved yet");
+                    return;
+                }
+
+                boolean canViewAnswers = (user != null && (user.getRole() == Role.ADMIN || (user.getRole() == Role.CREATOR && quiz.getCreatorId() == user.getId())));
+                if (canViewAnswers) {
+                    Quiz fullQuiz = quizService.getQuizWithAnswers(quiz.getId());
+                    JsonUtil.sendSuccess(resp, fullQuiz != null ? fullQuiz : quiz);
+                } else {
+                    Quiz takingQuiz = quizService.getQuizForTaking(quiz.getId());
+                    JsonUtil.sendSuccess(resp, takingQuiz);
+                }
+            } catch (QuizClosedException e) {
+                JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            } catch (SQLException e) {
+                JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error retrieving quiz: " + e.getMessage());
             }
             return;
         }
@@ -82,8 +122,14 @@ public class ListQuizzesServlet extends HttpServlet {
             } else if (creatorIdParam != null && !creatorIdParam.trim().isEmpty()) {
                 int creatorId = Integer.parseInt(creatorIdParam.trim());
                 quizzes = quizService.getQuizzesByCreator(creatorId);
-            } else {
+            } else if ("all".equalsIgnoreCase(filter) || "all".equalsIgnoreCase(status)) {
+                if (user == null || user.getRole() != Role.ADMIN) {
+                    JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Admin privileges required to view all quizzes");
+                    return;
+                }
                 quizzes = quizService.getApprovedQuizzes();
+            } else {
+                quizzes = quizService.getApprovedPublicQuizzes();
             }
 
             JsonUtil.sendSuccess(resp, quizzes);

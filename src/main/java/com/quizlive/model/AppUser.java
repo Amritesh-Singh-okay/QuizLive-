@@ -19,6 +19,7 @@ public abstract class AppUser implements Serializable {
     private String passwordHash;
     private String salt;
     private Role role;
+    private String rank = "STANDARD";
     private Timestamp createdAt;
 
     /**
@@ -31,12 +32,17 @@ public abstract class AppUser implements Serializable {
      * Parameterized constructor.
      */
     protected AppUser(int id, String name, String email, String passwordHash, String salt, Role role, Timestamp createdAt) {
+        this(id, name, email, passwordHash, salt, role, "STANDARD", createdAt);
+    }
+
+    protected AppUser(int id, String name, String email, String passwordHash, String salt, Role role, String rank, Timestamp createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
         this.salt = salt;
         this.role = role;
+        this.rank = (rank != null && !rank.trim().isEmpty()) ? rank.trim().toUpperCase() : "STANDARD";
         this.createdAt = createdAt;
     }
 
@@ -66,6 +72,26 @@ public abstract class AppUser implements Serializable {
     public abstract boolean canTakeQuiz();
 
     /**
+     * Checks if this user has direct publishing privileges (bypassing admin approval).
+     *
+     * @return true if permitted, false otherwise
+     */
+    public boolean canPublishDirectly() {
+        return false;
+    }
+
+    /**
+     * Checks if this user's creator rank has been approved/verified by an administrator.
+     */
+    public boolean isRankApproved() {
+        if (rank == null) {
+            return false;
+        }
+        String r = rank.trim().toUpperCase();
+        return r.equals("VERIFIED") || r.equals("APPROVED") || r.equals("TRUSTED") || r.equals("SENIOR") || r.equals("EXPERT");
+    }
+
+    /**
      * Returns the relative URL for this user's default dashboard.
      *
      * @return dashboard URL path
@@ -81,13 +107,18 @@ public abstract class AppUser implements Serializable {
      * based on the specified security role.
      */
     public static AppUser create(int id, String name, String email, String passwordHash, String salt, Role role, Timestamp createdAt) {
+        return create(id, name, email, passwordHash, salt, role, "STANDARD", createdAt);
+    }
+
+    public static AppUser create(int id, String name, String email, String passwordHash, String salt, Role role, String rank, Timestamp createdAt) {
         if (role == null) {
             throw new IllegalArgumentException("User role cannot be null");
         }
+        String effectiveRank = (rank != null && !rank.trim().isEmpty()) ? rank.trim().toUpperCase() : "STANDARD";
         return switch (role) {
-            case ADMIN -> new Admin(id, name, email, passwordHash, salt, createdAt);
-            case CREATOR -> new QuizCreator(id, name, email, passwordHash, salt, createdAt);
-            case PARTICIPANT -> new Participant(id, name, email, passwordHash, salt, createdAt);
+            case ADMIN -> new Admin(id, name, email, passwordHash, salt, effectiveRank, createdAt);
+            case CREATOR -> new QuizCreator(id, name, email, passwordHash, salt, effectiveRank, createdAt);
+            case PARTICIPANT -> new Participant(id, name, email, passwordHash, salt, effectiveRank, createdAt);
         };
     }
 
@@ -141,6 +172,14 @@ public abstract class AppUser implements Serializable {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getRank() {
+        return (rank != null && !rank.trim().isEmpty()) ? rank : "STANDARD";
+    }
+
+    public void setRank(String rank) {
+        this.rank = (rank != null && !rank.trim().isEmpty()) ? rank.trim().toUpperCase() : "STANDARD";
     }
 
     public Timestamp getCreatedAt() {

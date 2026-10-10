@@ -5,12 +5,17 @@
     request.setAttribute("pageTitle", "Exam Runner - QuizLive");
     request.setAttribute("activeNav", "dashboard");
     String quizIdParam = request.getParameter("quizId");
-    int safeQuizId = 1;
+    String codeParam = request.getParameter("code");
+    if (codeParam == null || codeParam.trim().isEmpty()) {
+        codeParam = request.getParameter("accessCode");
+    }
+    int safeQuizId = 0;
     if (quizIdParam != null && !quizIdParam.trim().isEmpty()) {
         try {
             safeQuizId = Integer.parseInt(quizIdParam.trim());
         } catch (NumberFormatException ignored) {}
     }
+    String cleanCode = (codeParam != null) ? codeParam.trim().toUpperCase().replaceAll("[^a-zA-Z0-9_-]", "") : "";
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
@@ -248,7 +253,8 @@
 <script>
     window.QUIZ_CONFIG = {
         contextPath: '<%= request.getContextPath() %>',
-        quizId: <%= safeQuizId %>
+        quizId: <%= safeQuizId %>,
+        code: '<%= cleanCode %>'
     };
 </script>
 <script src="<%= request.getContextPath() %>/js/quiz-runner.js"></script>

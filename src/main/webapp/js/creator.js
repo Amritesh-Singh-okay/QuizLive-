@@ -93,6 +93,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addBtnTop) addBtnTop.addEventListener('click', function() { addQuestion(); });
     if (addBtnBottom) addBtnBottom.addEventListener('click', function() { addQuestion(); });
 
+    var genCodeBtn = document.getElementById('btn-generate-code');
+    if (genCodeBtn) {
+        genCodeBtn.addEventListener('click', function() {
+            var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            var generated = '';
+            for (var i = 0; i < 6; i++) {
+                generated += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            var codeInput = document.getElementById('quiz-access-code');
+            if (codeInput) {
+                codeInput.value = generated;
+            }
+        });
+    }
+
     // Initialize with 2 sample questions if container empty
     if (container && container.children.length === 0) {
         addQuestion({
@@ -124,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var desc = document.getElementById('quiz-desc').value.trim();
             var duration = parseInt(document.getElementById('quiz-duration').value, 10);
             var submitBtn = document.getElementById('save-quiz-btn');
+            var originalBtnText = submitBtn ? submitBtn.textContent : 'Publish Quiz';
 
             if (!title) {
                 if (window.showToast) window.showToast('error', 'Please provide a quiz title');
@@ -173,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Publishing Quiz...';
+                submitBtn.textContent = 'Publishing Assessment...';
             }
 
             var contextPath = form.getAttribute('data-context-path') || '';
@@ -183,10 +199,17 @@ document.addEventListener('DOMContentLoaded', function() {
             var scheduledEl = document.getElementById('quiz-scheduled-time');
             var scheduledVal = (scheduledEl && scheduledEl.value) ? scheduledEl.value : null;
 
+            var accessCodeEl = document.getElementById('quiz-access-code');
+            var accessCode = accessCodeEl ? accessCodeEl.value.trim().toUpperCase() : null;
+            var isPublicEl = document.getElementById('quiz-is-public');
+            var isPublic = isPublicEl ? (isPublicEl.value === 'true') : true;
+
             var payload = {
                 title: title,
                 description: desc,
                 durationSeconds: duration,
+                accessCode: accessCode || null,
+                isPublic: isPublic,
                 isHeld: isHeld,
                 scheduledStartAt: scheduledVal,
                 questions: questionsList
@@ -207,8 +230,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(result) {
                 if (result.ok && result.data && result.data.success) {
+                    var quiz = result.data.data;
+                    var isApproved = (quiz && quiz.status === 'APPROVED');
+                    var msg = isApproved ?
+                        'Quiz published directly! Your assessment is now active and live.' :
+                        'Quiz created successfully! Submitted for administrator approval.';
                     if (window.showToast) {
-                        window.showToast('success', 'Quiz created successfully! Submitted for administrator approval.');
+                        window.showToast('success', msg);
                     }
                     setTimeout(function() {
                         window.location.href = contextPath + '/creator/dashboard.jsp';
@@ -218,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.showToast) window.showToast('error', err);
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = 'Publish Quiz for Approval';
+                        submitBtn.textContent = originalBtnText;
                     }
                 }
             })
@@ -226,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.showToast) window.showToast('error', 'Network error creating quiz.');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Publish Quiz for Approval';
+                    submitBtn.textContent = originalBtnText;
                 }
             });
         });

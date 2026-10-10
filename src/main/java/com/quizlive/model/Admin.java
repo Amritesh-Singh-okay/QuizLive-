@@ -17,7 +17,11 @@ public class Admin extends AppUser {
     }
 
     public Admin(int id, String name, String email, String passwordHash, String salt, Timestamp createdAt) {
-        super(id, name, email, passwordHash, salt, Role.ADMIN, createdAt);
+        super(id, name, email, passwordHash, salt, Role.ADMIN, "VERIFIED", createdAt);
+    }
+
+    public Admin(int id, String name, String email, String passwordHash, String salt, String rank, Timestamp createdAt) {
+        super(id, name, email, passwordHash, salt, Role.ADMIN, rank, createdAt);
     }
 
     @Override
@@ -27,6 +31,11 @@ public class Admin extends AppUser {
 
     @Override
     public boolean canApproveQuiz() {
+        return true;
+    }
+
+    @Override
+    public boolean canPublishDirectly() {
         return true;
     }
 

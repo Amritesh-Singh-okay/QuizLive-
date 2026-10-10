@@ -79,6 +79,32 @@
         </div>
     </div>
 
+    <!-- Join Quiz with Access Code Card -->
+    <div class="card" style="margin-bottom: 2.5rem; background: var(--bg-card); border-left: 4px solid var(--primary); box-shadow: var(--shadow-sm);">
+        <div class="card-body" style="padding: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.25rem;">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Join Quiz with Access Code
+                    </h3>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
+                        Enter a private assessment code or classroom code provided by your instructor to launch the exam.
+                    </p>
+                </div>
+                <form id="join-code-form" onsubmit="joinQuizByCode(event)" style="display: flex; gap: 0.5rem; width: 100%; max-width: 400px;">
+                    <input type="text" id="join-access-code" class="form-control" placeholder="Enter Access Code (e.g. BIO101)" maxlength="32" style="font-weight: 700; text-transform: uppercase; font-family: monospace; letter-spacing: 0.04em;" required>
+                    <button type="submit" id="join-code-btn" class="btn btn-primary" style="white-space: nowrap;">
+                        Join Quiz &rarr;
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Available Quizzes Section -->
     <div style="margin-bottom: 3rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
@@ -192,6 +218,7 @@
                                 '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary);">' +
                                     qCount + ' Questions' +
                                 '</span>' +
+                                (q.accessCode ? '<span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-secondary); font-family: monospace;">🔑 ' + escapeHtml(q.accessCode) + '</span>' : '') +
                             '</div>' +
                         '</div>' +
                         '<div class="card-footer">' +
@@ -212,6 +239,54 @@
                 loading.textContent = 'Failed to load quizzes. Please refresh.';
             });
     }
+
+    window.joinQuizByCode = function(e) {
+        if (e) e.preventDefault();
+        var codeInput = document.getElementById('join-access-code');
+        var code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+        if (!code) {
+            if (window.showToast) window.showToast('warning', 'Please enter a quiz access code.');
+            return;
+        }
+
+        var btn = document.getElementById('join-code-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Joining...';
+        }
+
+        fetch(contextPath + '/api/quizzes?code=' + encodeURIComponent(code))
+            .then(function(res) {
+                return res.json().then(function(data) {
+                    return { status: res.status, ok: res.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                if (result.ok && result.data && result.data.success && result.data.data) {
+                    var quiz = result.data.data;
+                    if (window.showToast) {
+                        window.showToast('success', 'Found quiz: ' + quiz.title + '! Launching exam room...');
+                    }
+                    setTimeout(function() {
+                        window.location.href = contextPath + '/participant/take-quiz.jsp?code=' + encodeURIComponent(code);
+                    }, 400);
+                } else {
+                    var err = (result.data && result.data.error) ? result.data.error : 'Quiz not found with access code: ' + code;
+                    if (window.showToast) window.showToast('error', err);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'Join Quiz \u2192';
+                    }
+                }
+            })
+            .catch(function(err) {
+                if (window.showToast) window.showToast('error', 'Network error checking access code.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Join Quiz \u2192';
+                }
+            });
+    };
 
     function loadAttempts() {
         var tbody = document.getElementById('attempts-tbody');

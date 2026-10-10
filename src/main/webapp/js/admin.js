@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(res) { return res.json(); })
             .then(function(resData) {
                 if (!resData || !resData.success || !resData.data || resData.data.length === 0) {
-                    usersTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No registered users found.</td></tr>';
+                    usersTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No registered users found.</td></tr>';
                     document.getElementById('stat-total-users').textContent = '0';
                     return;
                 }
@@ -94,6 +94,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                     (u.role === 'CREATOR') ? '<span class="badge badge-creator">Creator</span>' :
                                     '<span class="badge badge-participant">Participant</span>';
 
+                    var rankCell = '<span style="color: var(--text-muted); font-size: 0.8rem;">&mdash;</span>';
+                    if (u.role === 'CREATOR') {
+                        var isVerified = (u.canPublishDirectly === true || u.rank === 'VERIFIED' || u.rank === 'TEACHER');
+                        if (isVerified) {
+                            rankCell =
+                                '<div style="display: flex; flex-direction: column; gap: 0.25rem;">' +
+                                    '<span class="badge" style="background: rgba(59, 115, 84, 0.15); color: #3B7354; border: 1px solid rgba(59, 115, 84, 0.35); font-weight: 700; font-size: 0.72rem;">★ VERIFIED (Direct)</span>' +
+                                    '<button class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.4rem; color: var(--text-secondary);" onclick="updateCreatorRank(' + u.id + ', \'STANDARD\')">Revoke Rank</button>' +
+                                '</div>';
+                        } else {
+                            rankCell =
+                                '<div style="display: flex; flex-direction: column; gap: 0.25rem;">' +
+                                    '<span class="badge" style="background: rgba(184, 115, 51, 0.15); color: #B87333; border: 1px solid rgba(184, 115, 51, 0.35); font-size: 0.72rem;">' + escapeHtml(u.rank || 'STANDARD') + ' (Pending)</span>' +
+                                    '<button class="btn btn-success btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.4rem;" onclick="updateCreatorRank(' + u.id + ', \'VERIFIED\')">Approve Rank</button>' +
+                                '</div>';
+                        }
+                    } else if (u.role === 'ADMIN') {
+                        rankCell = '<span class="badge badge-admin" style="font-size: 0.72rem;">Admin (Direct)</span>';
+                    } else {
+                        rankCell = '<span style="color: var(--text-muted); font-size: 0.8rem;">Participant</span>';
+                    }
+
                     var dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '--';
 
                     var tr = document.createElement('tr');
@@ -102,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<td><strong>' + escapeHtml(u.name) + '</strong></td>' +
                         '<td>' + escapeHtml(u.email) + '</td>' +
                         '<td>' + roleBadge + '</td>' +
+                        '<td>' + rankCell + '</td>' +
                         '<td>' +
                             '<select class="form-select" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: auto;" onchange="updateUserRole(' + u.id + ', this.value)">' +
                                 '<option value="PARTICIPANT"' + (u.role === 'PARTICIPANT' ? ' selected' : '') + '>Participant</option>' +
@@ -120,8 +143,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             })
             .catch(function(err) {
-                usersTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger); padding: 2rem;">Error loading users.</td></tr>';
+                usersTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 2rem;">Error loading users.</td></tr>';
             });
+    };
+
+    window.updateCreatorRank = function(userId, newRank) {
+        fetch(contextPath + '/api/admin/users/update-rank', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userId,
+                rank: newRank
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(resData) {
+            if (resData && resData.success) {
+                if (window.showToast) {
+                    window.showToast('success', 'User #' + userId + ' rank updated to ' + newRank + (newRank === 'VERIFIED' ? ' (Direct publishing enabled)' : ''));
+                }
+                loadUsers();
+            } else {
+                var err = (resData && resData.error) ? resData.error : 'Failed to update rank';
+                if (window.showToast) window.showToast('error', err);
+            }
+        })
+        .catch(function(err) {
+            if (window.showToast) window.showToast('error', 'Network error updating creator rank');
+        });
     };
 
     window.updateUserRole = function(userId, newRole) {
