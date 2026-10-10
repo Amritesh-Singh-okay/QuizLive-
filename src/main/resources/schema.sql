@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS quizzes (
     creator_id INT NOT NULL,
     duration_seconds INT NOT NULL,
     status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    is_held BOOLEAN DEFAULT FALSE,
+    scheduled_start_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

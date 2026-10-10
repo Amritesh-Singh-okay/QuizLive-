@@ -102,6 +102,10 @@ class LeaderboardServiceTest {
             @Override
             public boolean updateStatus(int quizId, com.quizlive.model.enums.QuizStatus status) { return false; }
             @Override
+            public boolean updateHeldStatus(int quizId, boolean isHeld) { return false; }
+            @Override
+            public boolean updateScheduledStart(int quizId, java.sql.Timestamp scheduledStartAt) { return false; }
+            @Override
             public boolean delete(int id) { return false; }
         };
 

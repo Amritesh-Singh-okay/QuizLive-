@@ -3,6 +3,7 @@ package com.quizlive;
 import com.quizlive.util.DatabaseInitializer;
 import com.quizlive.util.EnvConfig;
 import com.quizlive.websocket.LeaderboardEndpoint;
+import com.quizlive.websocket.WaitingRoomEndpoint;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
@@ -69,7 +70,7 @@ public class AppLauncher {
             ctx.setResources(resources);
         }
 
-        ctx.addServletContainerInitializer(new WsSci(), Set.of(LeaderboardEndpoint.class));
+        ctx.addServletContainerInitializer(new WsSci(), Set.of(LeaderboardEndpoint.class, WaitingRoomEndpoint.class));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {

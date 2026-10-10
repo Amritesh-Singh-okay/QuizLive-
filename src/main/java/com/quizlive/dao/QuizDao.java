@@ -4,6 +4,7 @@ import com.quizlive.model.Quiz;
 import com.quizlive.model.enums.QuizStatus;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface QuizDao {
@@ -23,6 +24,14 @@ public interface QuizDao {
     List<Quiz> listByStatus(QuizStatus status) throws SQLException;
 
     boolean updateStatus(int quizId, QuizStatus status) throws SQLException;
+
+    default boolean updateHeldStatus(int quizId, boolean isHeld) throws SQLException {
+        return false;
+    }
+
+    default boolean updateScheduledStart(int quizId, Timestamp scheduledStartAt) throws SQLException {
+        return false;
+    }
 
     boolean delete(int id) throws SQLException;
 }

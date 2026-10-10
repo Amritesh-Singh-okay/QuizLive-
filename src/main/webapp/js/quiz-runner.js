@@ -32,6 +32,171 @@ document.addEventListener('DOMContentLoaded', function() {
     var confirmModal = document.getElementById('confirm-modal');
     var resultsModal = document.getElementById('results-modal');
 
+    // Waiting Room Elements
+    var waitingContainer = document.getElementById('waiting-room-container');
+    var examContainer = document.getElementById('exam-active-container');
+    var waitingCountEl = document.getElementById('waiting-room-count');
+    var waitingTitleEl = document.getElementById('waiting-quiz-title');
+    var waitingDescEl = document.getElementById('waiting-quiz-desc');
+    var scheduledCard = document.getElementById('scheduled-start-card');
+    var scheduledCountdownEl = document.getElementById('scheduled-countdown');
+    var lobbyStatusText = document.getElementById('lobby-status-text');
+
+    var lobbyWs = null;
+    var lobbyPollTimer = null;
+    var scheduledTimer = null;
+    var inWaitingRoom = false;
+
+    function enterWaitingRoom(lobbyData) {
+        inWaitingRoom = true;
+        if (waitingContainer) waitingContainer.style.display = 'block';
+        if (examContainer) examContainer.style.display = 'none';
+
+        if (waitingTitleEl && lobbyData && lobbyData.title) {
+            waitingTitleEl.textContent = lobbyData.title;
+        }
+        if (waitingDescEl && lobbyData && lobbyData.description) {
+            waitingDescEl.textContent = lobbyData.description;
+        }
+        if (waitingCountEl && lobbyData && lobbyData.waitingCount != null) {
+            waitingCountEl.textContent = Math.max(1, lobbyData.waitingCount);
+        }
+
+        if (lobbyData && lobbyData.scheduledStartAt) {
+            setupScheduledCountdown(lobbyData.scheduledStartAt);
+        }
+
+        connectWaitingWs();
+        startLobbyPolling();
+    }
+
+    function exitWaitingRoomAndLaunch() {
+        if (!inWaitingRoom) return;
+        inWaitingRoom = false;
+
+        if (lobbyStatusText) {
+            lobbyStatusText.textContent = 'Host started the quiz! Launching exam...';
+        }
+        if (window.showToast) {
+            window.showToast('success', 'Host started the quiz! Launching assessment...');
+        }
+
+        if (lobbyWs) {
+            try { lobbyWs.close(); } catch (e) {}
+            lobbyWs = null;
+        }
+        if (lobbyPollTimer) {
+            clearInterval(lobbyPollTimer);
+            lobbyPollTimer = null;
+        }
+        if (scheduledTimer) {
+            clearInterval(scheduledTimer);
+            scheduledTimer = null;
+        }
+
+        setTimeout(function() {
+            if (waitingContainer) waitingContainer.style.display = 'none';
+            if (examContainer) examContainer.style.display = 'block';
+            startQuiz();
+        }, 700);
+    }
+
+    function connectWaitingWs() {
+        if (lobbyWs) return;
+        var protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+        var wsUrl = protocol + location.host + contextPath + '/ws/waiting-room/' + quizId;
+
+        try {
+            lobbyWs = new WebSocket(wsUrl);
+            lobbyWs.onopen = function() {
+                if (lobbyStatusText) lobbyStatusText.textContent = 'Connected & Live — Waiting for Host';
+            };
+            lobbyWs.onmessage = function(event) {
+                try {
+                    var data = JSON.parse(event.data);
+                    if (data.type === 'LOBBY_UPDATE') {
+                        if (waitingCountEl && data.waitingCount != null) {
+                            waitingCountEl.textContent = Math.max(1, data.waitingCount);
+                        }
+                    } else if (data.type === 'QUIZ_STARTED') {
+                        exitWaitingRoomAndLaunch();
+                    } else if (data.type === 'QUIZ_HELD') {
+                        if (lobbyStatusText) lobbyStatusText.textContent = 'Quiz held in lobby by host';
+                    }
+                } catch (e) {}
+            };
+            lobbyWs.onerror = function() {
+                // Polling fallback operates in background
+            };
+            lobbyWs.onclose = function() {
+                lobbyWs = null;
+            };
+        } catch (e) {
+            // Polling fallback operates in background
+        }
+    }
+
+    function startLobbyPolling() {
+        if (lobbyPollTimer) return;
+        lobbyPollTimer = setInterval(function() {
+            if (!inWaitingRoom) {
+                clearInterval(lobbyPollTimer);
+                lobbyPollTimer = null;
+                return;
+            }
+
+            fetch(contextPath + '/api/quizzes/lobby-status?quizId=' + quizId)
+                .then(function(res) { return res.json(); })
+                .then(function(resData) {
+                    if (resData && resData.success && resData.data) {
+                        var data = resData.data;
+                        if (waitingCountEl && data.waitingCount != null) {
+                            waitingCountEl.textContent = Math.max(1, data.waitingCount);
+                        }
+                        if (data.canStart === true) {
+                            exitWaitingRoomAndLaunch();
+                        } else if (data.scheduledStartAt) {
+                            setupScheduledCountdown(data.scheduledStartAt);
+                        }
+                    }
+                })
+                .catch(function() {});
+        }, 2500);
+    }
+
+    function setupScheduledCountdown(scheduledStartAtStr) {
+        if (!scheduledStartAtStr) {
+            if (scheduledCard) scheduledCard.style.display = 'none';
+            return;
+        }
+
+        var targetMs = (typeof scheduledStartAtStr === 'number') ? scheduledStartAtStr : (new Date(scheduledStartAtStr)).getTime();
+        if (isNaN(targetMs) || targetMs <= Date.now()) {
+            if (scheduledCard) scheduledCard.style.display = 'none';
+            return;
+        }
+
+        if (scheduledCard) scheduledCard.style.display = 'block';
+
+        if (scheduledTimer) clearInterval(scheduledTimer);
+        scheduledTimer = setInterval(function() {
+            var diff = Math.floor((targetMs - Date.now()) / 1000);
+            if (diff <= 0) {
+                clearInterval(scheduledTimer);
+                scheduledTimer = null;
+                if (scheduledCountdownEl) scheduledCountdownEl.textContent = '00:00';
+                exitWaitingRoomAndLaunch();
+                return;
+            }
+
+            var m = Math.floor(diff / 60);
+            var s = diff % 60;
+            if (scheduledCountdownEl) {
+                scheduledCountdownEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }
+        }, 1000);
+    }
+
     // Initialize Quiz
     function startQuiz() {
         fetch(contextPath + '/api/attempts/start', {
@@ -48,6 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         })
         .then(function(result) {
+            if (result.status === 423 || (result.data && (result.data.waitingRoom || (result.data.data && result.data.data.waitingRoom)))) {
+                var lobbyData = (result.data && result.data.data) ? result.data.data : {};
+                enterWaitingRoom(lobbyData);
+                return;
+            }
+
             if (result.status === 409) {
                 if (window.showToast) {
                     window.showToast('warning', 'You have already completed this quiz. Redirecting to leaderboard...');
@@ -63,6 +234,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (titleEl) titleEl.textContent = 'Error: ' + err;
                 if (window.showToast) window.showToast('error', err);
                 return;
+            }
+
+            // Successfully started! Ensure waiting room components hidden
+            if (waitingContainer) waitingContainer.style.display = 'none';
+            if (examContainer) examContainer.style.display = 'block';
+            if (lobbyWs) {
+                try { lobbyWs.close(); } catch (e) {}
+                lobbyWs = null;
+            }
+            if (lobbyPollTimer) {
+                clearInterval(lobbyPollTimer);
+                lobbyPollTimer = null;
+            }
+            if (scheduledTimer) {
+                clearInterval(scheduledTimer);
+                scheduledTimer = null;
             }
 
             var attemptData = result.data.data;

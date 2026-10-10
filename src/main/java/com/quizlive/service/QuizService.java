@@ -89,7 +89,62 @@ public class QuizService {
         return quiz;
     }
 
+    public Quiz findById(int quizId) throws SQLException {
+        return quizDao.findById(quizId);
+    }
+
     public Quiz getQuizWithAnswers(int quizId) throws SQLException {
         return quizDao.findByIdWithQuestions(quizId);
+    }
+
+    public boolean startQuizSession(int quizId, int requestingUserId, boolean isAdmin)
+            throws SQLException, com.quizlive.exception.UnauthorizedException {
+        Quiz quiz = quizDao.findById(quizId);
+        if (quiz == null) {
+            throw new IllegalArgumentException("Quiz not found with ID: " + quizId);
+        }
+
+        if (!isAdmin && quiz.getCreatorId() != requestingUserId) {
+            throw new com.quizlive.exception.UnauthorizedException("Only the quiz creator or an administrator can start this live session");
+        }
+
+        boolean updated = quizDao.updateHeldStatus(quizId, false);
+        if (updated) {
+            quizDao.updateScheduledStart(quizId, null);
+            com.quizlive.websocket.WaitingRoomEndpoint.broadcastQuizStarted(quizId);
+        }
+        return updated;
+    }
+
+    public boolean holdQuizSession(int quizId, int requestingUserId, boolean isAdmin)
+            throws SQLException, com.quizlive.exception.UnauthorizedException {
+        Quiz quiz = quizDao.findById(quizId);
+        if (quiz == null) {
+            throw new IllegalArgumentException("Quiz not found with ID: " + quizId);
+        }
+
+        if (!isAdmin && quiz.getCreatorId() != requestingUserId) {
+            throw new com.quizlive.exception.UnauthorizedException("Only the quiz creator or an administrator can hold this quiz session");
+        }
+
+        boolean updated = quizDao.updateHeldStatus(quizId, true);
+        if (updated) {
+            com.quizlive.websocket.WaitingRoomEndpoint.broadcastQuizHeld(quizId);
+        }
+        return updated;
+    }
+
+    public boolean updateScheduledStart(int quizId, java.sql.Timestamp scheduledStartAt, int requestingUserId, boolean isAdmin)
+            throws SQLException, com.quizlive.exception.UnauthorizedException {
+        Quiz quiz = quizDao.findById(quizId);
+        if (quiz == null) {
+            throw new IllegalArgumentException("Quiz not found with ID: " + quizId);
+        }
+
+        if (!isAdmin && quiz.getCreatorId() != requestingUserId) {
+            throw new com.quizlive.exception.UnauthorizedException("Only the quiz creator or an administrator can schedule this quiz");
+        }
+
+        return quizDao.updateScheduledStart(quizId, scheduledStartAt);
     }
 }

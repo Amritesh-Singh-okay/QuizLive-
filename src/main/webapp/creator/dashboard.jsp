@@ -84,7 +84,7 @@
                         <th>Quiz Title</th>
                         <th>Duration</th>
                         <th>Questions</th>
-                        <th>Status</th>
+                        <th>Status &amp; Live Lobby</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -173,19 +173,47 @@
                                       (q.status === 'REJECTED') ? '<span class="badge badge-rejected">Rejected</span>' :
                                       '<span class="badge badge-pending">Pending Review</span>';
 
+                    var liveBadge = '';
+                    if (q.status === 'APPROVED') {
+                        if (q.isHeld) {
+                            liveBadge = '<div style="margin-top: 0.35rem;"><span class="badge" style="background: rgba(184, 115, 51, 0.12); color: #B87333; border: 1px solid rgba(184, 115, 51, 0.35);">⏸ In Lobby (Held)</span></div>';
+                        } else {
+                            liveBadge = '<div style="margin-top: 0.35rem;"><span class="badge" style="background: rgba(59, 115, 84, 0.12); color: #3B7354; border: 1px solid rgba(59, 115, 84, 0.35);">▶ Live &amp; Active</span></div>';
+                        }
+                    }
+
+                    var schedNote = '';
+                    if (q.scheduledStartAt) {
+                        schedNote = '<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">🕒 ' + escapeHtml(q.scheduledStartAt) + '</div>';
+                    }
+
+                    var hostButton = '';
+                    if (q.status === 'APPROVED') {
+                        if (q.isHeld) {
+                            hostButton = '<button class="btn btn-success btn-sm" onclick="toggleQuizHost(' + q.id + ', \'start\')" style="padding: 0.25rem 0.6rem; font-weight: 700;">▶ Start Quiz Now</button>';
+                        } else {
+                            hostButton = '<button class="btn btn-outline btn-sm" onclick="toggleQuizHost(' + q.id + ', \'hold\')" style="padding: 0.25rem 0.6rem; color: #B87333; border-color: #B87333;">⏸ Hold in Lobby</button>';
+                        }
+                    }
+
                     var qCount = (q.questions) ? q.questions.length : '--';
 
                     var tr = document.createElement('tr');
                     tr.innerHTML =
                         '<td>#' + q.id + '</td>' +
-                        '<td><strong>' + escapeHtml(q.title) + '</strong></td>' +
+                        '<td>' +
+                            '<strong>' + escapeHtml(q.title) + '</strong>' +
+                            '<div style="font-size: 0.8rem; color: var(--text-muted);">' + escapeHtml(q.description || '') + '</div>' +
+                        '</td>' +
                         '<td>' + Math.round(q.durationSeconds / 60) + ' min (' + q.durationSeconds + 's)</td>' +
                         '<td>' + qCount + '</td>' +
-                        '<td>' + statusBadge + '</td>' +
+                        '<td>' + statusBadge + liveBadge + schedNote + '</td>' +
                         '<td>' +
-                            '<div style="display: flex; gap: 0.5rem;">' +
-                                '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm">Leaderboard</a>' +
-                                '<button class="btn btn-secondary btn-sm" onclick="filterSubmissionsByQuiz(' + q.id + ')">Submissions</button>' +
+                            '<div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">' +
+                                hostButton +
+                                '<a href="' + contextPath + '/participant/take-quiz.jsp?quizId=' + q.id + '" target="_blank" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.5rem;" title="Preview Lobby as Student">Lobby</a>' +
+                                '<a href="' + contextPath + '/leaderboard.jsp?quizId=' + q.id + '" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.5rem;">Leaderboard</a>' +
+                                '<button class="btn btn-secondary btn-sm" onclick="filterSubmissionsByQuiz(' + q.id + ')" style="padding: 0.25rem 0.5rem;">Submissions</button>' +
                             '</div>' +
                         '</td>';
 
@@ -199,6 +227,40 @@
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 2rem;">Error loading quizzes.</td></tr>';
             });
     }
+
+    window.toggleQuizHost = function(quizId, action) {
+        var actionLabel = (action === 'start') ? 'start this quiz session now and admit waiting students' : 'put this quiz on hold in the lobby';
+        if (!confirm('Are you sure you want to ' + actionLabel + '?')) {
+            return;
+        }
+
+        fetch(contextPath + '/api/quizzes/host', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                quizId: quizId,
+                action: action
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(resData) {
+            if (resData && resData.success) {
+                if (window.showToast) {
+                    window.showToast('success', resData.data && resData.data.message ? resData.data.message : 'Quiz session updated successfully!');
+                }
+                loadMyQuizzes();
+            } else {
+                var err = (resData && resData.error) ? resData.error : 'Failed to update quiz host state';
+                if (window.showToast) window.showToast('error', err);
+            }
+        })
+        .catch(function(err) {
+            if (window.showToast) window.showToast('error', 'Network error updating quiz host status.');
+        });
+    };
 
     function loadSubmissions(quizId) {
         var tbody = document.getElementById('submissions-tbody');

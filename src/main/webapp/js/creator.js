@@ -178,10 +178,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var contextPath = form.getAttribute('data-context-path') || '';
 
+            var isHeldEl = document.getElementById('quiz-is-held');
+            var isHeld = isHeldEl ? isHeldEl.checked : false;
+            var scheduledEl = document.getElementById('quiz-scheduled-time');
+            var scheduledVal = (scheduledEl && scheduledEl.value) ? scheduledEl.value : null;
+
             var payload = {
                 title: title,
                 description: desc,
                 durationSeconds: duration,
+                isHeld: isHeld,
+                scheduledStartAt: scheduledVal,
                 questions: questionsList
             };
 

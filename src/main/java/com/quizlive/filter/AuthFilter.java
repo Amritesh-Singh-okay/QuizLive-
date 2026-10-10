@@ -37,6 +37,7 @@ public class AuthFilter implements Filter {
             "/leaderboard.jsp",
             "/api/leaderboard",
             "/leaderboard/data",
+            "/api/quizzes/lobby-status",
             "/settings"
     );
 

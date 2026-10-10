@@ -13,6 +13,31 @@ public final class JsonUtil {
 
     private static final Gson GSON = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .registerTypeAdapter(java.sql.Timestamp.class, (com.google.gson.JsonDeserializer<java.sql.Timestamp>) (json, typeOfT, context) -> {
+                if (json == null || json.isJsonNull()) {
+                    return null;
+                }
+                String s = json.getAsString().trim();
+                if (s.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return new java.sql.Timestamp(Long.parseLong(s));
+                } catch (NumberFormatException ignored) {}
+                s = s.replace("T", " ");
+                if (s.length() == 16) {
+                    s += ":00";
+                }
+                try {
+                    return java.sql.Timestamp.valueOf(s);
+                } catch (Exception e) {
+                    return null;
+                }
+            })
+            .registerTypeAdapter(java.sql.Timestamp.class, (com.google.gson.JsonSerializer<java.sql.Timestamp>) (src, typeOfSrc, context) -> {
+                if (src == null) return com.google.gson.JsonNull.INSTANCE;
+                return new com.google.gson.JsonPrimitive(src.toString());
+            })
             .serializeNulls()
             .create();
 

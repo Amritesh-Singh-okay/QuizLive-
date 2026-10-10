@@ -37,6 +37,33 @@
                     <input type="number" id="quiz-duration" class="form-control" value="300" min="30" max="7200" required>
                     <p class="form-help">Total test duration in seconds (e.g. 300 = 5 minutes, 600 = 10 minutes).</p>
                 </div>
+
+                <div style="margin-top: 1.5rem; padding: 1.25rem; background: var(--bg-surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        Live Classroom &amp; Waiting Room Mode
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem;">
+                        <input type="checkbox" id="quiz-is-held" style="margin-top: 0.25rem; width: 16px; height: 16px; accent-color: var(--primary);">
+                        <label for="quiz-is-held" style="font-size: 0.9rem; color: var(--text-primary); cursor: pointer;">
+                            <strong>Hold Quiz in Waiting Room (Live Classroom Mode)</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                                Students will wait on a lobby screen until you click "Start Quiz Now" from your dashboard (or until the scheduled start time arrives).
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="quiz-scheduled-time" class="form-label" style="font-size: 0.85rem;">Optional: Scheduled Start Date &amp; Time</label>
+                        <input type="datetime-local" id="quiz-scheduled-time" class="form-control" style="max-width: 320px;">
+                        <p class="form-help">If specified, students wait in lobby until this exact time or until you start manually.</p>
+                    </div>
+                </div>
             </div>
         </div>
 

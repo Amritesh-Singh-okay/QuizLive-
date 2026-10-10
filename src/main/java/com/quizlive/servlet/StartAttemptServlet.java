@@ -61,6 +61,31 @@ public class StartAttemptServlet extends HttpServlet {
         try {
             Quiz quiz = quizService.getQuizForTaking(quizId);
 
+            if (!quiz.canParticipantsStartNow()) {
+                Map<String, Object> lobbyData = new LinkedHashMap<>();
+                lobbyData.put("waitingRoom", true);
+                lobbyData.put("quizId", quiz.getId());
+                lobbyData.put("title", quiz.getTitle());
+                lobbyData.put("isHeld", quiz.isHeld());
+                lobbyData.put("scheduledStartAt", quiz.getScheduledStartAt());
+                lobbyData.put("canStart", false);
+                lobbyData.put("waitingCount", com.quizlive.websocket.WaitingRoomEndpoint.getWaitingCount(quizId));
+
+                resp.setStatus(423);
+                resp.setContentType("application/json");
+                resp.setCharacterEncoding("UTF-8");
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", false);
+                body.put("waitingRoom", true);
+                body.put("data", lobbyData);
+                body.put("error", "This quiz is currently held in the waiting room by the host.");
+                try (java.io.PrintWriter writer = resp.getWriter()) {
+                    writer.write(JsonUtil.toJson(body));
+                    writer.flush();
+                }
+                return;
+            }
+
             Attempt existing = attemptDao.findByQuizAndUser(quizId, user.getId());
             if (existing != null) {
                 if (existing.getStatus() == AttemptStatus.SUBMITTED || existing.getStatus() == AttemptStatus.AUTO_SUBMITTED) {

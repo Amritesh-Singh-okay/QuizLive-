@@ -22,6 +22,8 @@ public class Quiz implements Serializable {
     private String creatorName; // Populated via SQL JOIN for convenience
     private int durationSeconds;
     private QuizStatus status;
+    private boolean isHeld;
+    private Timestamp scheduledStartAt;
     private Timestamp createdAt;
     private List<Question> questions;
 
@@ -145,6 +147,44 @@ public class Quiz implements Serializable {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isHeld() {
+        return isHeld;
+    }
+
+    public void setHeld(boolean held) {
+        this.isHeld = held;
+    }
+
+    public Timestamp getScheduledStartAt() {
+        return scheduledStartAt;
+    }
+
+    public void setScheduledStartAt(Timestamp scheduledStartAt) {
+        this.scheduledStartAt = scheduledStartAt;
+    }
+
+    public Timestamp getScheduledStartTime() {
+        return scheduledStartAt;
+    }
+
+    public void setScheduledStartTime(Timestamp scheduledStartTime) {
+        this.scheduledStartAt = scheduledStartTime;
+    }
+
+    /**
+     * Determines whether participants can actively begin taking this quiz right now.
+     * Returns false if the quiz is held in a waiting room or if the scheduled start time is in the future.
+     */
+    public boolean canParticipantsStartNow() {
+        if (isHeld) {
+            return false;
+        }
+        if (scheduledStartAt != null) {
+            return System.currentTimeMillis() >= scheduledStartAt.getTime();
+        }
+        return true;
     }
 
     public List<Question> getQuestions() {

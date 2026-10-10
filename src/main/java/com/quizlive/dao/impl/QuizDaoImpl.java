@@ -20,30 +20,36 @@ public class QuizDaoImpl implements QuizDao {
     private final QuestionDao questionDao;
 
     private static final String SQL_INSERT_QUIZ =
-            "INSERT INTO quizzes (title, description, creator_id, duration_seconds, status) VALUES (?, ?, ?, ?, ?)";
+            "INSERT INTO quizzes (title, description, creator_id, duration_seconds, status, is_held, scheduled_start_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_FIND_BY_ID =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.id = ?";
 
     private static final String SQL_LIST_ALL =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id ORDER BY q.id DESC";
 
     private static final String SQL_LIST_APPROVED =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.status = 'APPROVED' ORDER BY q.id DESC";
 
     private static final String SQL_LIST_BY_CREATOR =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.creator_id = ? ORDER BY q.id DESC";
 
     private static final String SQL_LIST_BY_STATUS =
-            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.created_at, u.name AS creator_name " +
+            "SELECT q.id, q.title, q.description, q.creator_id, q.duration_seconds, q.status, q.is_held, q.scheduled_start_at, q.created_at, u.name AS creator_name " +
             "FROM quizzes q JOIN users u ON q.creator_id = u.id WHERE q.status = ? ORDER BY q.id DESC";
 
     private static final String SQL_UPDATE_STATUS =
             "UPDATE quizzes SET status = ? WHERE id = ?";
+
+    private static final String SQL_UPDATE_HELD_STATUS =
+            "UPDATE quizzes SET is_held = ? WHERE id = ?";
+
+    private static final String SQL_UPDATE_SCHEDULED_START =
+            "UPDATE quizzes SET scheduled_start_at = ? WHERE id = ?";
 
     private static final String SQL_DELETE =
             "DELETE FROM quizzes WHERE id = ?";
@@ -69,6 +75,8 @@ public class QuizDaoImpl implements QuizDao {
                 stmt.setInt(3, quiz.getCreatorId());
                 stmt.setInt(4, quiz.getDurationSeconds());
                 stmt.setString(5, quiz.getStatus().name());
+                stmt.setBoolean(6, quiz.isHeld());
+                stmt.setTimestamp(7, quiz.getScheduledStartAt());
 
                 int affected = stmt.executeUpdate();
                 if (affected == 0) {
@@ -166,6 +174,26 @@ public class QuizDaoImpl implements QuizDao {
     }
 
     @Override
+    public boolean updateHeldStatus(int quizId, boolean isHeld) throws SQLException {
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_HELD_STATUS)) {
+            stmt.setBoolean(1, isHeld);
+            stmt.setInt(2, quizId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateScheduledStart(int quizId, Timestamp scheduledStartAt) throws SQLException {
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_SCHEDULED_START)) {
+            stmt.setTimestamp(1, scheduledStartAt);
+            stmt.setInt(2, quizId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
     public boolean delete(int id) throws SQLException {
         try (Connection conn = DbConnectionUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
@@ -206,6 +234,14 @@ public class QuizDaoImpl implements QuizDao {
 
         Quiz quiz = new Quiz(id, title, description, creatorId, duration, status, createdAt);
         quiz.setCreatorName(rs.getString("creator_name"));
+        try {
+            quiz.setHeld(rs.getBoolean("is_held"));
+        } catch (SQLException ignored) {
+        }
+        try {
+            quiz.setScheduledStartAt(rs.getTimestamp("scheduled_start_at"));
+        } catch (SQLException ignored) {
+        }
         return quiz;
     }
 }

@@ -31,8 +31,28 @@ public final class DatabaseInitializer {
         }
         LOGGER.info("Starting database schema and seed data check...");
         executeSqlScript("schema.sql");
+        applySchemaMigrations();
         executeSqlScript("seed.sql");
         LOGGER.info("Database initialization completed successfully.");
+    }
+
+    /**
+     * Applies backward-compatible schema updates for live hosting and waiting rooms.
+     */
+    private static void applySchemaMigrations() {
+        try (Connection conn = DbConnectionUtil.getConnection();
+             Statement stmt = conn.createStatement()) {
+            try {
+                stmt.execute("ALTER TABLE quizzes ADD COLUMN is_held BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.execute("ALTER TABLE quizzes ADD COLUMN scheduled_start_at TIMESTAMP NULL");
+            } catch (Exception ignored) {
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Schema migration notice: {}", e.getMessage());
+        }
     }
 
     /**
