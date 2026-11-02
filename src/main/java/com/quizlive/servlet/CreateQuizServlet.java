@@ -116,6 +116,10 @@ public class CreateQuizServlet extends HttpServlet {
 
         if (canDirectPublish) {
             quiz.setStatus(QuizStatus.APPROVED);
+            // Teacher direct publish without admin approval -> must not show to everyone, code-only
+            if (user.getRole() != Role.ADMIN) {
+                quiz.setPublic(false);
+            }
         } else {
             quiz.setStatus(QuizStatus.PENDING);
         }

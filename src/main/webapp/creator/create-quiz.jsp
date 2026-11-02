@@ -76,12 +76,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="quiz-is-public" class="form-label">Catalog Visibility *</label>
+                        <label for="quiz-is-public" class="form-label">Catalog Visibility</label>
                         <select id="quiz-is-public" class="form-select">
-                            <option value="true" selected>Public Catalog (Visible to all students)</option>
-                            <option value="false">Private / Unlisted (Hidden from catalog, join with code)</option>
+                            <option value="false" selected>Private / Class Code (Students join with code &mdash; Direct Publish)</option>
+                            <option value="true">Public Catalog (Visible to everyone &mdash; Requires Admin Approval)</option>
                         </select>
-                        <p class="form-help">Unlisted quizzes do not clutter the public catalog.</p>
+                        <p class="form-help">Quizzes published directly by teachers are private by code so they don't clutter the catalog. Admin approval publishes to everyone.</p>
                     </div>
                 </div>
 

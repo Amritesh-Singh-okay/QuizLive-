@@ -65,7 +65,27 @@ public class QuizService {
     }
 
     public boolean approveQuiz(int quizId) throws SQLException {
-        return quizDao.updateStatus(quizId, QuizStatus.APPROVED);
+        boolean updated = quizDao.updateStatus(quizId, QuizStatus.APPROVED);
+        if (updated) {
+            quizDao.updateVisibility(quizId, true);
+        }
+        return updated;
+    }
+
+    public boolean directPublishQuizByCreator(int quizId, int creatorId)
+            throws SQLException, com.quizlive.exception.UnauthorizedException {
+        Quiz quiz = quizDao.findById(quizId);
+        if (quiz == null) {
+            return false;
+        }
+        if (quiz.getCreatorId() != creatorId) {
+            throw new com.quizlive.exception.UnauthorizedException("Creators can only publish their own quizzes");
+        }
+        boolean updated = quizDao.updateStatus(quizId, QuizStatus.APPROVED);
+        if (updated) {
+            quizDao.updateVisibility(quizId, false);
+        }
+        return updated;
     }
 
     public boolean rejectQuiz(int quizId) throws SQLException {

@@ -150,7 +150,17 @@ public class ApproveQuizServlet extends HttpServlet {
 
         try {
             boolean isReject = "reject".equalsIgnoreCase(action);
-            boolean updated = isReject ? quizService.rejectQuiz(quizId) : quizService.approveQuiz(quizId);
+            boolean updated;
+            if (isReject) {
+                updated = quizService.rejectQuiz(quizId);
+            } else if (user.getRole() == Role.ADMIN) {
+                // Admin approval: publishes to everyone in public catalog
+                updated = quizService.approveQuiz(quizId);
+            } else {
+                // Verified creator approving own quiz without admin approval:
+                // Active for taking, but private/code-only so it doesn't show to everyone
+                updated = quizService.directPublishQuizByCreator(quizId, user.getId());
+            }
 
             if (!updated) {
                 JsonUtil.sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Quiz not found");
@@ -162,6 +172,8 @@ public class ApproveQuizServlet extends HttpServlet {
             result.put("status", isReject ? "REJECTED" : "APPROVED");
             result.put("message", isReject ? "Quiz rejected successfully" : "Quiz approved successfully");
             JsonUtil.sendSuccess(resp, result);
+        } catch (com.quizlive.exception.UnauthorizedException e) {
+            JsonUtil.sendError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (SQLException e) {
             JsonUtil.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error updating quiz status");
         }
