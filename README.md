@@ -1,7 +1,5 @@
 # QuizLive — Enterprise Proctored Real-Time Assessment Platform
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-quizlive--xa4a.onrender.com-success?style=for-the-badge&logo=render&logoColor=white)](https://quizlive-xa4a.onrender.com/)
-[![Deployment Status](https://img.shields.io/badge/Render-Online%20(DB%20Connected)-46E3B7?style=for-the-badge&logo=statuspage&logoColor=black)](https://quizlive-xa4a.onrender.com/health)
 [![Java](https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Jakarta EE](https://img.shields.io/badge/Jakarta%20EE-10%20(Servlet%206.0)-1A2B4C?style=for-the-badge&logo=eclipsevert.x&logoColor=white)](https://jakarta.ee/)
 [![Apache Tomcat](https://img.shields.io/badge/Apache%20Tomcat-10.1%20Embedded-F8DC75?style=for-the-badge&logo=apachetomcat&logoColor=black)](https://tomcat.apache.org/)
@@ -13,9 +11,6 @@
 
 > **QuizLive** is a production-grade, high-concurrency, real-time proctored online assessment platform built in pure modern Java (**Jakarta EE 10 / Servlet 6.0**, **WebSocket 2.1**, **HikariCP**, and **Embedded Apache Tomcat 10.1**).  
 > Designed with a **Zero-Trust Server-Authoritative Architecture**, QuizLive prevents cheating at the network, client, and protocol layers while delivering sub-second cold starts and live millisecond leaderboard synchronization.
-> 
-> 🌐 **Live Web Application:** [https://quizlive-xa4a.onrender.com](https://quizlive-xa4a.onrender.com/)  
-> 🩺 **Live Health Diagnostic:** [https://quizlive-xa4a.onrender.com/health](https://quizlive-xa4a.onrender.com/health) (`{"status":"UP","database":"CONNECTED"}`)
 
 ---
 
@@ -464,9 +459,6 @@ All accounts share the default password: **`password123`**
 | **Student Participant 2** | `bob@quizlive.com` | `password123` | Multi-user competition and live leaderboard tests |
 
 ### 5-Minute Evaluator Demonstration
-
-> 💡 **Quick Test Option:** You can test this live on the deployed site at **[https://quizlive-xa4a.onrender.com](https://quizlive-xa4a.onrender.com)** without setting up a local database, or follow the steps below on `http://localhost:8080/quizlive`.
-
 1. **Admin Approval (OOP & RBAC):** Login as `admin@quizlive.com` $\rightarrow$ Approve pending quizzes in the approval queue.
 2. **Creator Host & Waiting Room (WebSockets):** Login as `creator@quizlive.com` $\rightarrow$ Click **Host Live Quiz** on *"Core Java Fundamentals"* (Code: `JAVA101`).
 3. **Student Joining & Proctoring (Anti-Cheat):** In another window/incognito, login as `alice@quizlive.com` $\rightarrow$ Enter code `JAVA101`. Watch the creator's student counter increment in real time. Creator clicks **Start Quiz** $\rightarrow$ Alice's screen transitions automatically. Switch tabs to test proctoring telemetry.
