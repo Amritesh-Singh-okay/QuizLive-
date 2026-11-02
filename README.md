@@ -14,39 +14,9 @@
 
 ---
 
-## 🎯 Academic Marking Rubric Compliance Matrix
+## 🏗️ System Architecture & Solution Design
 
-QuizLive has been rigorously engineered to achieve **100% Full Marks (33 / 33)** under both the **Java Web Based Projects Marking Rubric** and the **Java GUI / Core Java Marking Rubric**.
-
-### Primary Evaluation: Java Web Based Projects Marking Rubric (33 Marks)
-
-| # | Rubric Category | Marks | Implemented Technical Architecture | Verified Code References |
-|---|---|:---:|---|---|
-| **1** | **Problem Understanding & Solution Design** | **8 / 8** | • Zero-trust anti-cheat assessment architecture<br>• 3-tier Jakarta EE architecture (no Spring bloat)<br>• 3 decoupled actor workflows (Admin, Creator, Participant)<br>• Normalized 7-table schema with cascades & unique constraints | • [`AppLauncher.java`](src/main/java/com/quizlive/AppLauncher.java#L20)<br>• [`schema.sql`](src/main/resources/schema.sql#L1)<br>• [`QUIZLIVE_PLATFORM_SPECIFICATION.md`](QUIZLIVE_PLATFORM_SPECIFICATION.md) |
-| **2** | **Core Java Concepts** | **10 / 10** | • **OOP Implementation** (Inheritance, Polymorphism, Interfaces, Custom Exceptions)<br>• **Collections & Generics** (Type-safe collections, multi-attribute `Comparator` sorting)<br>• **Multithreading & Synchronization** (Scheduled daemon executors, `AtomicInteger`, `ConcurrentHashMap`) | • [`AppUser.java`](src/main/java/com/quizlive/model/AppUser.java#L12)<br>• [`Gradeable.java`](src/main/java/com/quizlive/model/Gradeable.java#L3)<br>• [`LeaderboardService.java`](src/main/java/com/quizlive/service/LeaderboardService.java#L22)<br>• [`QuizSchedulerService.java`](src/main/java/com/quizlive/concurrency/QuizSchedulerService.java#L25) |
-| **3** | **Database Integration (JDBC)** | **8 / 8** | • **Classes for DB Operations**: Dedicated DAO pattern (7 interfaces + 7 implementations)<br>• **JDBC Connectivity**: HikariCP connection pool with double-checked locking<br>• **ACID Transactions**: Manual `setAutoCommit(false)`, `commit()`, and `rollback()`<br>• **100% PreparedStatements**: Zero string concatenation | • [`DbConnectionUtil.java`](src/main/java/com/quizlive/util/DbConnectionUtil.java#L19)<br>• [`QuizDaoImpl.java`](src/main/java/com/quizlive/dao/impl/QuizDaoImpl.java#L77)<br>• [`AttemptDaoImpl.java`](src/main/java/com/quizlive/dao/impl/AttemptDaoImpl.java#L144)<br>• [`UserDaoImpl.java`](src/main/java/com/quizlive/dao/impl/UserDaoImpl.java#L45) |
-| **4** | **Servlets & Web Integration** | **7 / 7** | • 16 Jakarta EE Servlets (`@WebServlet`) handling REST & JSP dispatch<br>• Security Filters (`AuthFilter`, `RoleFilter`) for RBAC interceptors<br>• Real-time WebSocket endpoints (`@ServerEndpoint`) for live lobby & instant leaderboard push<br>• Tab-switch visibility proctoring & dynamic AJAX front-end | • [`AuthFilter.java`](src/main/java/com/quizlive/filter/AuthFilter.java#L21)<br>• [`RoleFilter.java`](src/main/java/com/quizlive/filter/RoleFilter.java#L19)<br>• [`LeaderboardEndpoint.java`](src/main/java/com/quizlive/websocket/LeaderboardEndpoint.java#L23)<br>• [`WaitingRoomEndpoint.java`](src/main/java/com/quizlive/websocket/WaitingRoomEndpoint.java#L27) |
-| **TOTAL** | **Full Marks Achieved** | **33 / 33** | **111 / 111 Automated JUnit 5 Unit, Integration & E2E Tests Passing** | |
-
----
-
-### Secondary Evaluation: Core Java & Data Operations Rubric (33 Marks Breakdown)
-
-| Specific Criteria | Marks | Exact Code Implementation & Verification |
-|---|:---:|---|
-| **OOP Implementation** *(Polymorphism, Inheritance, Exceptions, Interfaces)* | **10 / 10** | • **Inheritance**: Abstract base [`AppUser`](src/main/java/com/quizlive/model/AppUser.java#L12) extended by [`Admin`](src/main/java/com/quizlive/model/Admin.java), [`QuizCreator`](src/main/java/com/quizlive/model/QuizCreator.java), [`Participant`](src/main/java/com/quizlive/model/Participant.java).<br>• **Polymorphism**: Dynamic method overriding (`canCreateQuiz()`, `getDashboardUrl()`) and factory instantiation.<br>• **Interfaces**: [`Gradeable`](src/main/java/com/quizlive/model/Gradeable.java#L3) contract implemented by [`Attempt`](src/main/java/com/quizlive/model/Attempt.java#L10); 7 DAO interfaces separating API from implementation.<br>• **Exceptions**: Custom hierarchy ([`InvalidAttemptException`](src/main/java/com/quizlive/exception/InvalidAttemptException.java), [`QuizClosedException`](src/main/java/com/quizlive/exception/QuizClosedException.java), [`UnauthorizedException`](src/main/java/com/quizlive/exception/UnauthorizedException.java)). |
-| **Collections & Generics** | **6 / 6** | • Type-safe collections: `List<Question>`, `List<AttemptAnswer>`, `Map<Integer, Set<Session>>`.<br>• Chained multi-attribute comparator sorting in [`LeaderboardService`](src/main/java/com/quizlive/service/LeaderboardService.java#L22) (`score DESC`, `duration ASC`, `submittedAt ASC`).<br>• Generic JSON serialization via Google Gson in [`JsonUtil`](src/main/java/com/quizlive/util/JsonUtil.java). |
-| **Multithreading & Synchronization** | **4 / 4** | • Background daemon thread pool (`Executors.newScheduledThreadPool(4)`) in [`QuizSchedulerService`](src/main/java/com/quizlive/concurrency/QuizSchedulerService.java#L25) scheduling auto-submits.<br>• Thread-safe registries: `ConcurrentHashMap<Integer, AttemptSession>` in [`ActiveAttemptRegistry`](src/main/java/com/quizlive/concurrency/ActiveAttemptRegistry.java#L10).<br>• Lock-free tab switch tracking with `AtomicInteger` in [`AttemptSession`](src/main/java/com/quizlive/concurrency/AttemptSession.java#L16).<br>• Explicit `synchronized` methods in [`LeaderboardService`](src/main/java/com/quizlive/service/LeaderboardService.java#L37) and [`QuizSchedulerService`](src/main/java/com/quizlive/concurrency/QuizSchedulerService.java#L81) to eliminate race conditions. |
-| **Classes for Database Operations** | **7 / 7** | • Strict DAO separation: 7 Interfaces ([`UserDao`](src/main/java/com/quizlive/dao/UserDao.java), [`QuizDao`](src/main/java/com/quizlive/dao/QuizDao.java), [`QuestionDao`](src/main/java/com/quizlive/dao/QuestionDao.java), [`AttemptDao`](src/main/java/com/quizlive/dao/AttemptDao.java), [`AttemptAnswerDao`](src/main/java/com/quizlive/dao/AttemptAnswerDao.java), [`MessageDao`](src/main/java/com/quizlive/dao/MessageDao.java), [`SettingsDao`](src/main/java/com/quizlive/dao/SettingsDao.java)).<br>• 7 Robust implementations in `com.quizlive.dao.impl` encapsulating all SQL logic. |
-| **Database Connectivity (JDBC)** | **3 / 3** | • High-performance [`DbConnectionUtil`](src/main/java/com/quizlive/util/DbConnectionUtil.java#L19) leveraging **HikariCP 5.1.0** connection pooling.<br>• Thread-safe singleton DataSource initialization using double-checked locking.<br>• Multi-tier configuration loaded via [`EnvConfig`](src/main/java/com/quizlive/util/EnvConfig.java) and `db.properties`. |
-| **Implement JDBC for Database Connectivity** | **3 / 3** | • 100% parameterized `PreparedStatement` with zero string concatenation SQL injection risks.<br>• Complete JDBC ACID transaction control: `conn.setAutoCommit(false)`, `conn.commit()`, and `conn.rollback()` in multi-row operations ([`QuizDaoImpl.java`](src/main/java/com/quizlive/dao/impl/QuizDaoImpl.java#L77), [`AttemptDaoImpl.java`](src/main/java/com/quizlive/dao/impl/AttemptDaoImpl.java#L144)). |
-| **TOTAL** | **33 / 33** | **Every rubric requirement implemented, documented, and tested.** |
-
----
-
-## 🏗️ Section 1: Problem Understanding & Solution Design (8 / 8 Marks)
-
-### 1.1 Problem Statement & Zero-Trust Solution
+### 1. Problem Statement & Zero-Trust Architecture
 
 Traditional online quiz apps suffer from critical security vulnerabilities:
 1. **Answer Key Leakage:** Answers are often bundled in client HTML/JS payloads, easily viewed in F12 DevTools.  
@@ -60,7 +30,7 @@ Traditional online quiz apps suffer from critical security vulnerabilities:
 
 ---
 
-### 1.2 High-Level 3-Tier Architecture
+### 2. High-Level 3-Tier Layered Architecture
 
 QuizLive is engineered cleanly in pure Java on Embedded Tomcat 10.1 without Spring Boot overhead:
 
@@ -123,7 +93,7 @@ flowchart TD
 
 ---
 
-### 1.3 End-to-End Quiz Lifecycle Sequence Diagram
+### 3. End-to-End Quiz Lifecycle Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -167,7 +137,7 @@ sequenceDiagram
 
 ---
 
-### 1.4 Role-Based Access Control (RBAC) Workflows
+### 4. Role-Based Access Control (RBAC) Workflows
 
 ```mermaid
 flowchart LR
@@ -202,9 +172,9 @@ flowchart LR
 
 ---
 
-## ☕ Section 2: Core Java Concepts & OOP Implementation (10 / 10 Marks)
+## ☕ Core Java Concepts & OOP Implementation
 
-### 2.1 OOP Inheritance, Polymorphism & Abstraction
+### 1. OOP Inheritance, Polymorphism & Abstraction
 
 ```mermaid
 classDiagram
@@ -251,7 +221,7 @@ classDiagram
 
 ---
 
-### 2.2 Collections & Generics (6 Marks)
+### 2. Collections & Generics
 
 1. **Type-Safe Generics:** Extensive use of `List<Question>`, `List<AttemptAnswer>`, and `Map<Integer, Set<Session>>`.
 2. **Multi-Attribute Comparator Chaining:** [`LeaderboardService`](src/main/java/com/quizlive/service/LeaderboardService.java#L22) sorts attempts using a multi-factor comparator:
@@ -264,7 +234,7 @@ classDiagram
 
 ---
 
-### 2.3 Multithreading & Synchronization (4 Marks)
+### 3. Multithreading & Synchronization
 
 1. **Daemon Scheduled Executor:** [`QuizSchedulerService`](src/main/java/com/quizlive/concurrency/QuizSchedulerService.java#L25) manages a pool of 4 named daemon threads scheduling timeout auto-submissions.
 2. **Thread-Safe Registries:** Active sessions are stored in a `ConcurrentHashMap<Integer, AttemptSession>` inside [`ActiveAttemptRegistry`](src/main/java/com/quizlive/concurrency/ActiveAttemptRegistry.java#L10).
@@ -273,9 +243,9 @@ classDiagram
 
 ---
 
-## 💾 Section 3: Database Integration & JDBC Operations (8 / 8 Marks)
+## 💾 Database Integration & JDBC Operations
 
-### 3.1 Relational Database Schema & ER Model
+### 1. Relational Database Schema & ER Model
 
 ```mermaid
 erDiagram
@@ -355,7 +325,7 @@ erDiagram
 
 ---
 
-### 3.2 Classes for Database Operations (DAO Pattern — 7 Marks)
+### 2. Classes for Database Operations (DAO Pattern)
 
 All SQL operations are isolated behind 7 DAO interface contracts:
 - [`UserDao`](src/main/java/com/quizlive/dao/UserDao.java) / [`UserDaoImpl`](src/main/java/com/quizlive/dao/impl/UserDaoImpl.java) — User CRUD & authentication
@@ -368,7 +338,7 @@ All SQL operations are isolated behind 7 DAO interface contracts:
 
 ---
 
-### 3.3 JDBC Connectivity, HikariCP & ACID Transactions (3 + 3 Marks)
+### 3. JDBC Connectivity, HikariCP & ACID Transactions
 
 - **HikariCP 5.1.0 Connection Pool:** Configured in [`DbConnectionUtil.java`](src/main/java/com/quizlive/util/DbConnectionUtil.java#L19) using double-checked locking singleton with prepared statement caching (`cachePrepStmts=true`).
 - **100% Parameterized Queries:** Every database query strictly utilizes `PreparedStatement`, eliminating SQL injection risks.
@@ -376,9 +346,9 @@ All SQL operations are isolated behind 7 DAO interface contracts:
 
 ---
 
-## 🌐 Section 4: Servlets & Web Integration (7 / 7 Marks)
+## 🌐 Servlets & Web Integration
 
-### 4.1 Jakarta Servlets & Web Filters
+### 1. Jakarta Servlets & Web Filters
 
 - **16 Jakarta Servlets (`@WebServlet`):** Full REST API coverage for authentication, quiz authoring, host controls, attempt grading, and administration.
 - **[`AuthFilter`](src/main/java/com/quizlive/filter/AuthFilter.java#L21):** Intercepts all traffic, validates active HTTP sessions, and whitelists public assets.
@@ -386,7 +356,7 @@ All SQL operations are isolated behind 7 DAO interface contracts:
 
 ---
 
-### 4.2 Real-Time WebSocket Engine (JSR-356)
+### 2. Real-Time WebSocket Engine (JSR-356)
 
 ```mermaid
 flowchart LR
